@@ -1,0 +1,195 @@
+TRACK 02 — FRAUD WATCH DATASET DESCRIPTION
+Crestline Community Bank | vibeFORWARD M-2 Hackathon
+================================================================================
+
+WHAT THIS DATASET IS ABOUT
+--------------------------
+
+This dataset simulates 90 days of banking activity at Crestline Community Bank.
+It contains 5,000 transactions across approximately 294 customer accounts, mixed
+with everyday merchant purchases and a hidden coordinated fraud ring.
+
+The core challenge: a fraud ring deliberately kept every transfer below typical
+alert thresholds. No single transaction looks alarming on its own. The suspicious
+pattern only becomes visible when you connect account-to-account flows, timing,
+amount bands, and shared device fingerprints across the graph.
+
+This is the competition dataset for Track 02 (Fraud Watch). Judges verify
+findings against a hidden answer key. The README hints at one ring of roughly
+12 accounts with total exposure of about $161,751.
+
+
+SOURCE FILES
+------------
+
+  data/track02_fraud_watch.csv   Raw data (extracted from archive.zip)
+  data/track02_clean.csv         Cleaned and enriched version
+  data/README_track02.md         Brief competition readme
+  clean_and_profile.py           Cleaning script
+
+
+RAW DATA SCHEMA (9 columns)
+---------------------------
+
+  transaction_id      Unique transaction identifier (TX-00001, TX-00002, ...)
+  account_id          Sending customer account (AC-####)
+  counterparty_id     Receiver — either another account (AC-####) or a
+                      merchant (MR-####)
+  amount              Transaction amount in USD
+  timestamp           Date and time of the transaction
+  merchant_category   Category label (grocery, retail, electronics, services,
+                      fuel, travel, dining) — used even for account transfers
+  device_id           Device fingerprint (DV-#####)
+  ip_region           US state code or foreign region (FR, JP, UK)
+  account_open_date   Date the sending account was opened
+
+
+WHAT WAS CLEANED
+----------------
+
+The raw data was already high quality. The cleaning pipeline:
+
+  1. Normalised column names (txn_id -> transaction_id)
+  2. Parsed timestamps and account_open_date as datetimes
+  3. Coerced amounts to numeric (stripped currency symbols if present)
+  4. Trimmed whitespace on string fields
+  5. Removed invalid rows: nulls, zero/negative amounts, self-transfers,
+     duplicate transaction IDs (0 rows removed — none were bad)
+  6. Added derived features for fraud analysis
+
+Result: 5,000 rows retained (100%), expanded to 21 columns in the clean file.
+
+
+ENRICHED COLUMNS IN track02_clean.csv
+--------------------------------------
+
+  counterparty_type     AC or MR prefix type
+  is_account_transfer   True when money moves between two bank accounts
+  is_merchant_payment   True when paying a merchant
+  hour                  Hour of day (0-23)
+  day_of_week           0=Monday through 6=Sunday
+  date                  Calendar date
+  late_night            True for transactions between 2:00 AM and 4:00 AM
+  in_suspect_range      True for amounts between $400 and $900
+  is_foreign_ip         True for IP regions FR, JP, or UK
+  edge_key              Directed link "AC-####->AC-####" or "AC-####->MR-####"
+  sender_tx_seq         Running transaction count per account
+  hours_since_last      Hours since the account's previous transaction
+
+
+DATASET STATISTICS
+------------------
+
+  Total transactions:        5,000
+  Unique accounts:           294
+  Unique merchants:          199
+  Date range:                2026-03-03 to 2026-06-01 (90 days)
+  Merchant payments:         4,750 (95%)
+  Account-to-account:        250 (5%)
+
+  Amount distribution (all transactions):
+    Min:     $1.36
+    Median:  $31.05
+    Mean:    $92.40
+    Max:     $14,941.26
+
+  Merchant categories: grocery, retail, electronics, services, fuel, travel, dining
+  IP regions: CA, CT, FL, NJ, NY, PA (US) plus FR, JP, UK (21 foreign transactions)
+
+
+THE HIDDEN FRAUD RING
+---------------------
+
+The fraud activity is concentrated in account-to-account transfers, not merchant
+payments. Key characteristics discovered in the data:
+
+  - 250 inter-account transfers, all between $402 and $899
+  - All 250 transfers occur between 2:00 AM and 4:00 AM
+  - 9 accounts form the visible transfer network:
+      AC-0001, AC-0002, AC-0003, AC-0005, AC-0006, AC-0007,
+      AC-0009, AC-0010, AC-0011
+  - Total ring exposure: $161,750.90 (matches the README hint of ~$161,751)
+  - Five accounts opened in a tight window (Feb 10–18, 2026):
+      AC-0010, AC-0001, AC-0011, AC-0009, AC-0005
+  - Transfers follow near-regular intervals (~42 transactions per edge pair)
+  - Two device fingerprints are shared across unrelated account pairs
+      (potential mule or linked accounts):
+      DV-52001 shared by AC-0131 and AC-0192
+      DV-31829 shared by AC-0127 and AC-0045
+
+  Transfer graph (directed edges):
+    AC-0001  -> AC-0002   (42 txns)
+    AC-0005  -> AC-0006   (42 txns)
+    AC-0005  -> AC-0009   (41 txns)
+    AC-0009  -> AC-0007   (42 txns)
+    AC-0010  -> AC-0011   (42 txns)
+    AC-0011  -> AC-0003   (41 txns)
+
+  AC-0002, AC-0003, AC-0006, and AC-0007 appear only as receivers — they never
+  initiate transfers in this dataset but receive funds from the ring.
+
+
+DISTRACTORS AND FALSE-POSITIVE TRAPS
+------------------------------------
+
+Most transactions (95%) are normal merchant spending in the $10–$100 range.
+The dataset also includes legitimate-looking anomalies designed to fool simple
+rules:
+
+  - Large single purchases up to ~$15,000 (not fraud)
+  - Occasional late-night merchant transactions (not fraud alone)
+  - High-frequency everyday spenders (not fraud alone)
+  - Foreign IP regions on a handful of transactions (21 total)
+  - Shared devices on non-ring accounts (may or may not be suspicious)
+
+A naive threshold rule (e.g. "flag anything over $500" or "flag all 2–4 AM
+activity") will produce many false positives. Effective detection requires
+combining graph structure, timing, amount bands, and device linkage.
+
+
+PROBLEMS THAT CAN BE SOLVED WITH THIS DATA
+------------------------------------------
+
+  1. Fraud ring detection
+     Build a directed graph from account-to-account transfers and find cyclic
+     money flows that stay under alert thresholds.
+
+  2. Coordinated account identification
+     Cluster accounts opened in the same time window with similar transaction
+     patterns (late-night, $400–$900 band, regular intervals).
+
+  3. Device fingerprint analysis
+     Flag accounts sharing the same device_id as potential linked identities.
+
+  4. Anomaly scoring
+     Score accounts by combining late_night_pct, suspect_range_pct, transfer
+     frequency, and graph centrality rather than single-feature thresholds.
+
+  5. Exposure quantification
+     Sum total funds moved through the ring ($161,751) for case briefs and
+     regulatory reporting.
+
+  6. Analyst workflow automation
+     Ingest CSV -> build knowledge graph -> detect rings -> score risk ->
+     generate a human-readable case brief (the RingAlert project goal).
+
+
+HOW TO USE THE CLEAN DATA
+-------------------------
+
+  Run the cleaner:
+    python clean_and_profile.py
+
+  Load the result:
+    import pandas as pd
+    df = pd.read_csv("data/track02_clean.csv")
+
+  Focus on inter-account flows for ring detection:
+    ring = df[df["is_account_transfer"]]
+
+  Filter high-signal transactions:
+    suspects = df[df["late_night"] & df["in_suspect_range"] & df["is_account_transfer"]]
+
+
+Generated: 2026-06-07
+Pipeline: clean_and_profile.py
