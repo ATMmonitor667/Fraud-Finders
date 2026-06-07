@@ -1,0 +1,356 @@
+================================================================================
+  RINGALERT — COMPLETE END-TO-END BUILD PLAN
+  vibeFORWARD: M-2 | Track 02: Fraud Watch | June 7, 2026
+================================================================================
+
+CURRENT STATE
+─────────────
+  ✅ Frontend:  fraudwatch_ui.html   — works standalone, data is hardcoded
+  ✅ Backend:   ringalert_agents.py  — 7-agent pipeline, runs in terminal only
+  ❌ Missing:   Flask API server connecting frontend ↔ backend
+  ❌ Missing:   Real Cognee reads/writes (keys not set)
+  ❌ Missing:   Real Geodo API calls (keys not set)
+  ❌ Missing:   SAR PDF download from browser
+  ❌ Missing:   GitHub repo (required for Devpost)
+  ❌ Missing:   Trupeer video (required or DISQUALIFIED)
+  ❌ Missing:   Devpost submission
+
+TARGET ARCHITECTURE
+───────────────────
+
+  Browser (fraudwatch_ui.html)
+       │
+       │  HTTP fetch() calls
+       ▼
+  Flask API server  (app.py — port 5000)
+       │
+       ├── POST /api/run       → triggers 7-agent pipeline
+       ├── GET  /api/status    → streams live agent log (SSE)
+       ├── GET  /api/results   → returns full JSON results
+       └── GET  /api/sar       → returns downloadable SAR PDF
+       │
+       ▼
+  ringalert_agents.py
+       │
+       ├── Cognee (graph memory layer — cognee.ai API key required)
+       ├── Geodo  (typology lookup   — geodo.ai API key required)
+       ├── PyMC   (Bayesian scoring  — local, no key needed)
+       ├── Claude API (SAR narrative — anthropic API key required)
+       └── Slack webhook (alert      — optional webhook URL)
+
+
+================================================================================
+  STEP 1 — GET YOUR API KEYS  (do this first, everything depends on it)
+================================================================================
+
+  1a. ANTHROPIC API KEY
+      → Go to: https://console.anthropic.com
+      → Create API key
+      → Save as: sk-ant-...
+
+  1b. COGNEE API KEY
+      → Go to: https://cognee.ai
+      → Sign up and get API key
+      → Save it
+
+  1c. GEODO API KEY (this is the $3,000 prize — do not skip)
+      → Go to: https://geodo.ai
+      → Request access / sign up
+      → Save API key
+
+  1d. SLACK WEBHOOK (optional but Agent 7 needs it to actually fire)
+      → Go to: https://api.slack.com/apps
+      → Create app → Incoming Webhooks → Activate
+      → Add to workspace → copy webhook URL
+      → Looks like: https://hooks.slack.com/services/T.../B.../...
+
+  Once you have all keys, open ringalert_agents.py and fill in lines 29–33:
+      ANTHROPIC_API_KEY  = "sk-ant-..."
+      COGNEE_API_KEY     = "..."
+      GEODO_API_KEY      = "..."
+      SLACK_WEBHOOK_URL  = "https://hooks.slack.com/..."
+
+
+================================================================================
+  STEP 2 — BUILD THE FLASK BACKEND (app.py)
+================================================================================
+
+  Create a new file: C:\Users\rhoss\Desktop\Fraud-Finders\app.py
+
+  This file needs these 4 endpoints:
+
+  ── POST /api/run ──────────────────────────────────────────────────────────────
+  Triggers the full 7-agent pipeline on the CSV.
+  Returns 200 immediately, runs pipeline in background thread.
+
+  ── GET /api/status ────────────────────────────────────────────────────────────
+  Server-Sent Events (SSE) stream.
+  Frontend connects to this and receives live log lines as agents run.
+  Each event = one log line (agent name + message).
+  Frontend displays these in the Agent Log terminal.
+
+  ── GET /api/results ───────────────────────────────────────────────────────────
+  Returns the final pipeline results as JSON:
+  {
+    "ring_accounts": ["AC-0001", "AC-0005", ...],
+    "sink_accounts": ["AC-0002", ...],
+    "sleeper_accounts": ["AC-0012"],
+    "ring_exposure": 161751.23,
+    "fraud_probability": 94.1,
+    "severity": 9.4,
+    "action_tier": "CRITICAL",
+    "typologies": ["ML-027", "ML-008", "ML-041"],
+    "sar_narrative": "...",
+    "signal_breakdown": { ... }
+  }
+
+  ── GET /api/sar ────────────────────────────────────────────────────────────────
+  Generates a SAR PDF using reportlab and returns it as a download.
+  Content-Type: application/pdf
+  Content-Disposition: attachment; filename="RingAlert_SAR_Report.pdf"
+
+  Install requirements:
+      pip install flask flask-cors reportlab --break-system-packages
+
+  Run the server:
+      python app.py
+      → Server starts at http://localhost:5000
+
+
+================================================================================
+  STEP 3 — UPDATE THE FRONTEND TO CALL THE BACKEND
+================================================================================
+
+  Open fraudwatch_ui.html and make these 4 changes:
+
+  3a. ▶ Run Pipeline button → calls POST /api/run
+      Instead of the JavaScript animation, button triggers:
+        fetch('http://localhost:5000/api/run', { method: 'POST' })
+
+  3b. Agent Log terminal → connects to SSE stream
+      After clicking Run, open EventSource to /api/status:
+        const es = new EventSource('http://localhost:5000/api/status')
+        es.onmessage = (e) => appendLog(JSON.parse(e.data))
+      This makes the terminal show REAL agent output, not simulated.
+
+  3c. Results display → calls GET /api/results after pipeline completes
+      When SSE stream closes (pipeline done), fetch results:
+        fetch('http://localhost:5000/api/results')
+          .then(r => r.json())
+          .then(data => updateDashboard(data))
+      This replaces the hardcoded ACCOUNTS array with real data.
+
+  3d. Download SAR button → calls GET /api/sar
+      Instead of the JS blob download, redirect to:
+        window.location.href = 'http://localhost:5000/api/sar'
+      Browser downloads the real PDF.
+
+
+================================================================================
+  STEP 4 — BUILD THE SAR PDF GENERATOR
+================================================================================
+
+  In app.py, the /api/sar endpoint generates a PDF using reportlab.
+
+  The PDF must contain:
+    - Header: "SUSPICIOUS ACTIVITY REPORT — FinCEN Format"
+    - Bank: Crestline Community Bank
+    - Date generated, investigation period
+    - Section 1: Subject accounts (ring_accounts list)
+    - Section 2: Activity description (sar_narrative from Agent 5)
+    - Section 3: Regulatory typologies (ML-027, ML-008, ML-041)
+    - Section 4: Evidence signals (all 5 signals with scores)
+    - Section 5: Recommended action (CRITICAL + freeze + referral)
+    - Section 6: PyMC score (severity 9.4/10, 94% ±3%)
+    - Footer: "Generated by RingAlert — vibeFORWARD M-2"
+
+  This is what judges download. Make it look professional.
+
+
+================================================================================
+  STEP 5 — TEST THE FULL END-TO-END FLOW
+================================================================================
+
+  5a. Open a terminal:
+        cd C:\Users\rhoss\Desktop\Fraud-Finders
+        python app.py
+
+  5b. Open Chrome and go to:
+        Open fraudwatch_ui.html directly (or http://localhost:5000 if you
+        serve it from Flask)
+
+  5c. Click ▶ Run Pipeline
+      → Flask receives the request
+      → Pipeline starts running
+      → Agent log shows REAL output from the Python agents
+      → After ~60 seconds, results appear in the dashboard
+
+  5d. Click Download SAR
+      → Real PDF downloads with the SAR narrative
+
+  5e. Check Slack (if configured)
+      → CRITICAL alert should have fired
+
+  5f. Verify these numbers match:
+      → Ring accounts: AC-0001, AC-0005, AC-0009, AC-0010, AC-0011, AC-0012
+      → Sleeper: AC-0012 (avg $41, 0% late-night)
+      → Exposure: ~$161,751
+      → Severity: 9.4/10
+      → Fraud probability: ~94%
+      → Typologies: ML-027, ML-008, ML-041
+
+
+================================================================================
+  STEP 6 — GITHUB REPO (required for Devpost)
+================================================================================
+
+  6a. Create a new PUBLIC repo at github.com
+      Name: ringalert-fraudwatch
+
+  6b. Upload these files:
+        ringalert_agents.py
+        app.py
+        fraudwatch_ui.html
+        data/track02_clean.csv    (if under 100MB — it is)
+        requirements.txt
+        README.md
+
+  6c. Create requirements.txt:
+        cognee
+        anthropic
+        pandas
+        numpy
+        pymc
+        networkx
+        requests
+        flask
+        flask-cors
+        reportlab
+
+  6d. Create README.md with:
+        - What RingAlert does (1 paragraph)
+        - How to run it (3 commands)
+        - The 7-agent architecture diagram
+        - Screenshot of the dashboard
+        - Tech stack: Cognee, Geodo, PyMC, Claude API, Flask
+
+  6e. Copy the GitHub repo URL — you need it for Devpost.
+
+
+================================================================================
+  STEP 7 — RECORD TRUPEER VIDEO (MANDATORY — NO VIDEO = DISQUALIFIED)
+================================================================================
+
+  7a. Go to: https://app.trupeer.ai/auth
+      Sign in / create account
+
+  7b. Start recording with:
+      - fraudwatch_ui.html open in Chrome (full screen)
+      - Terminal open with app.py running
+      - Follow: trupeer_demo_script.md exactly
+
+  7c. The video must show:
+      ✅ The dashboard loading
+      ✅ ▶ Run Pipeline clicked — real agents firing
+      ✅ AC-0012 being called out by name (the sleeper moment)
+      ✅ Geodo typology codes visible (ML-027, ML-008, ML-041)
+      ✅ Severity 9.4/10 and 94% ±3% visible
+      ✅ SAR download button clicked
+      ✅ Total time: 4:45–5:15 minutes
+
+  7d. Export video from Trupeer → get shareable URL
+
+
+================================================================================
+  STEP 8 — DEVPOST SUBMISSION (closes 5:00 PM — NO EXTENSIONS)
+================================================================================
+
+  Go to: https://vibeforward-m2-agents.devpost.com
+
+  Required fields:
+    ✅ Project name: RingAlert
+    ✅ Track: Track 02 — Fraud Watch
+    ✅ Step 0 PDF: RingAlert_Step0_ProductBrief.pdf  (already built)
+    ✅ GitHub repo URL: (from Step 6)
+    ✅ Trupeer video URL: (from Step 7)
+    ✅ Written description (copy from below)
+
+  WRITTEN DESCRIPTION FOR DEVPOST:
+  ─────────────────────────────────
+  RingAlert is a 7-agent fraud detection system that surfaces a hidden
+  6-account mule ring inside 5,000 bank transactions — including a sleeper
+  account (AC-0012) with zero late-night activity and a $41 average that
+  no threshold rule would ever flag.
+
+  The pipeline uses Cognee as the shared memory layer between all 7 agents,
+  Geodo to match detected patterns against FinCEN regulatory typologies
+  (ML-027, ML-008, ML-041), and PyMC for Bayesian severity scoring with
+  a confidence interval (94% fraud probability ±3%, severity 9.4/10).
+
+  Output: a downloadable Suspicious Activity Report in FinCEN format,
+  and an automatic Slack alert to the compliance team. Detection to SAR
+  in under 3 minutes. A human analyst takes 4 hours.
+
+  Tech stack: Cognee · Geodo · PyMC · Claude API · Flask · Python
+
+
+================================================================================
+  PRIORITY ORDER (do these in this exact sequence)
+================================================================================
+
+  🔴 RIGHT NOW (next 30 min):
+     [ ] Get API keys (Anthropic, Cognee, Geodo, Slack)
+     [ ] Fill in keys in ringalert_agents.py
+
+  🔴 NEXT (60–90 min):
+     [ ] Build app.py (Flask server with 4 endpoints)
+     [ ] Update fraudwatch_ui.html to call Flask API
+     [ ] Build SAR PDF generator in app.py
+     [ ] Run full end-to-end test — verify 6 accounts + AC-0012
+
+  🟡 AFTER THAT (30 min):
+     [ ] Create GitHub repo and push all files
+     [ ] Write README.md
+
+  🟡 THEN (20 min):
+     [ ] Record Trupeer video (follow trupeer_demo_script.md)
+     [ ] Get Trupeer shareable link
+
+  🔴 LAST — BEFORE 5:00 PM:
+     [ ] Submit on Devpost with GitHub + Trupeer links
+     [ ] Verify submission confirmation email received
+
+
+================================================================================
+  FILES IN YOUR FRAUD-FINDERS FOLDER
+================================================================================
+
+  EXISTING (already built):
+    ringalert_agents.py          ← 7-agent pipeline
+    fraudwatch_ui.html           ← dashboard frontend
+    trupeer_demo_script.md       ← demo script
+    RingAlert_Step0_ProductBrief.pdf  ← Devpost Step 0
+    data/track02_clean.csv       ← real dataset
+
+  TO BUILD:
+    app.py                       ← Flask backend (Step 2)
+    requirements.txt             ← pip install list (Step 6c)
+    README.md                    ← GitHub readme (Step 6d)
+
+
+================================================================================
+  PRIZE TARGETS — what each step unlocks
+================================================================================
+
+  Step 1–5 (full pipeline working)  → 1st Place $1,500
+  Step 1c  (Geodo actually called)  → Geodo Top Team $3,000
+  Step 2   (PyMC in Agent 4)        → PyMC Special $2,000
+  Step 7   (best Trupeer video)     → Best Trupeer $200
+
+  Maximum possible: $6,700
+
+
+================================================================================
+  END OF BUILD PLAN
+  RingAlert · vibeFORWARD M-2 · Track 02 · June 7 2026
+================================================================================
