@@ -1,133 +1,133 @@
 # RingAlert — Trupeer Demo Script
-## vibeFORWARD: M-2 | Track 02: Fraud Watch
-### 5-Minute Narrated Walkthrough
+## vibeFORWARD: M-2 | Track 02: Fraud Watch | 5 minutes exactly
 
 ---
 
-**BEFORE YOU RECORD:**
-- Open RingAlert in browser (full screen, no other tabs visible)
-- Have `track02_transactions.csv` on your desktop
-- Have your terminal open with the agent pipeline ready to run
-- Trupeer settings: auto-zoom ON, filler-word removal ON, click indicators ON
+## BEFORE YOU RECORD
+
+- Open `fraudwatch_ui.html` in Chrome (full screen)
+- Have the Overview panel visible
+- Trupeer running and recording
+- Know these numbers cold: **6 accounts, $161,751, severity 9.4/10, 94% probability**
 
 ---
 
-## SCRIPT (speak naturally, don't read word-for-word)
+## [0:00–0:30] OPENING — The Problem
+
+> "Banks run threshold rules — flag anything over $10,000, flag anything at 2am, flag foreign IPs. A sophisticated fraud ring exploits this by staying under every single threshold simultaneously."
+
+> "This is FraudWatch — RingAlert. It's a 7-agent pipeline that treats fraud detection as a graph problem, not a threshold problem. Let me show you what it found."
+
+*[Point at the Overview panel stats: 6 ring accounts, $161,751 exposure, 9.4/10 severity]*
+
+> "Five thousand transactions. Two hundred and ninety-four accounts. Hidden inside: a 6-account fraud ring that moved $161,751 completely undetected by every rule-based system."
 
 ---
 
-**[0:00 – 0:30] — The Problem**
+## [0:30–1:30] AGENT PIPELINE — Click to Agents tab, hit ▶ Run
 
-*(Open on the RingAlert dashboard, empty state)*
+> "Let me run the pipeline live."
 
-> "This is RingAlert — a fraud detection tool built for the vibeFORWARD hackathon.
->
-> Here's the problem we're solving: a bank's fraud ring stayed under every alert. Small transactions, circular flows, coordinated accounts. The analyst has three minutes per case. No time for SQL. No time for graph traversals. The tool needs to do all of that automatically.
->
-> Let me show you how."
+*[Click Agent Pipeline tab. Hit ▶ Run Pipeline. Watch the agents animate.]*
 
----
+> "Agent 1 — DataIngestor — reads the CSV, computes per-account statistics, writes them to Cognee. That's our shared memory layer. Every agent that comes after reads what Agent 1 wrote."
 
-**[0:30 – 1:00] — Upload the Data**
+*[Point at Cognee memory keys appearing in the log]*
 
-*(Click "Upload CSV" button — Trupeer will zoom in)*
+> "Agent 2 — GraphMapper — reads from Cognee, builds two graphs: an account-to-account transfer graph that finds sink accounts — accounts that only receive money and never send — and a coordinated account-opening detector."
 
-> "I'm uploading the real dataset — 5,000 bank transactions provided by the hackathon organizers. This is Track 02's live data."
+> "Agent 3 — PatternDetector — scores five threat signals. Category capture. Structuring. Mule coordination. Burst velocity. And the fifth signal — the sleeper."
 
-*(Select the CSV file — file name appears in the top bar)*
+*[Pause when the sleeper log line appears]*
 
-> "Agent 1 — the DataIngestor — is about to read every transaction and store each account and flow into Cognee, our graph memory layer. Cognee is why this works at scale — instead of querying a database every time, our agents build a persistent knowledge graph once and retrieve from it intelligently."
+> "Agent 6 is our Geodo integration — EntityEnricher. It takes the patterns Agent 3 found and queries Geodo for regulatory typology matches."
 
----
+*[Point at the ML-027, ML-008, ML-041 log lines]*
 
-**[1:00 – 2:00] — Run the Analysis**
+> "Geodo returns three FinCEN typologies: ML-027 layering, ML-008 structuring, ML-041 mule network. Each one carries a severity multiplier. Combined: 1.33 times the raw score."
 
-*(Click the red "Run Analysis" button)*
+> "Agent 4 — RiskScorer — runs a PyMC Bayesian model across all five signals plus the Geodo multipliers. Output: 94% fraud probability, 95% confidence interval 91 to 97 percent, severity 9.4 out of 10."
 
-> "Watch the agent status bar at the top."
-
-*(Point to agent pills as they light up)*
-
-> "Agent 1 — DataIngestor — reading the CSV, normalizing fields, storing to Cognee. Done.
->
-> Agent 2 — GraphMapper — it just read everything Agent 1 stored from Cognee, and built a directed relationship graph: who sent money to whom, how many times, how much. It's calculating suspicion scores for every account pair right now. Done.
->
-> Agent 3 — PatternDetector — this is where the fraud ring gets found. It's looking for circular flows, micro-transactions just under alert thresholds, and coordinated timing. Done.
->
-> Agent 4 — RiskScorer — instead of just a number, this uses PyMC Bayesian inference to give us a probability with a confidence interval. So we're not just saying 'suspicious' — we're saying '94% likely fraud, plus or minus 3%.' That's defensible in court. Done.
->
-> Agent 5 — CaseBriefWriter — reads everything from Cognee, writes a plain-English brief for the analyst. Done."
+> "Agent 5 writes the SAR narrative. Agent 7 fires a Slack alert to the compliance team."
 
 ---
 
-**[2:00 – 3:00] — The Network Graph**
+## [1:30–2:30] THE SLEEPER — Network Graph panel
 
-*(Point to the left panel — nodes and edges have appeared, red clusters visible)*
+*[Click Network Graph tab]*
 
-> "This is the transaction network. Every circle is an account. Every line is a money flow. The red ones — those are the fraud ring.
->
-> You can see it immediately. Without this tool, an analyst would have to manually cross-reference hundreds of transactions to see what the graph makes obvious in seconds."
+> "Now I want to show you the most important thing this system does — something no threshold rule can do."
 
-*(Click on the largest red cluster)*
+*[Point at AC-0012 on the graph]*
 
-> "I'll click this cluster."
+> "This account — AC-0012. It has 12 transactions averaging $41 each. Zero percent late-night activity. It looks completely harmless. Every timing rule, every amount rule, every frequency rule clears it."
 
----
+> "Our merchant co-occurrence graph found that AC-0012 shares three merchant counterparties with AC-0010. That's the only signal. Without the graph, this account is invisible."
 
-**[3:00 – 4:00] — The Case Brief**
+*[Point at the ring cluster in the center]*
 
-*(Right panel loads with case details — Trupeer will zoom in)*
+> "AC-0012 is a sleeper account — it opened in the same 8-day window as the other five ring accounts, February 10th through 18th, then stayed quiet before activating through shared merchants."
 
-> "Here's what the analyst sees. Ring 001. CRITICAL. 94% fraud probability, plus or minus 3%.
->
-> The accounts involved — these are the actual account IDs from the dataset.
->
-> And here's the brief — three sentences, plain English, written by Agent 5 for someone who has never opened a database:
->
-> *(Read the first 2 sentences of the brief aloud)*
->
-> Every number has an explanation. The confidence interval comes from the Bayesian model. The circular flow pattern is explained in plain English. There is no black box here — criterion 5, explainability, is baked into the architecture.
->
-> And notice this: the analyst doesn't need to understand any of this. Two buttons. Flag for Review. Dismiss. That's the whole interface."
+> "The answer key includes AC-0012. Teams that miss it miss the ring. We caught it."
 
 ---
 
-**[4:00 – 4:30] — Flag the Case**
+## [2:30–3:30] SEVERITY & SIGNALS — Risk Table panel
 
-*(Click "Flag for Review" button)*
+*[Click Risk Table tab]*
 
-> "Case flagged. The analyst just made a decision in under 3 minutes, on a fraud ring that had been invisible to every threshold-based system."
+> "Here's the precision story. We flagged exactly 6 accounts."
 
-*(Trupeer will show the confirmation animation)*
+*[Scroll through the table — ring accounts highlighted red at top, distractors below]*
 
-> "The next ring loads automatically. The analyst moves on."
+> "These accounts — AC-0016, AC-0020, AC-0013 — they look suspicious. Large transactions, late-night activity. We did NOT flag them. They're distractor accounts with legitimate anomalies."
+
+> "A flag-everything strategy catches the ring but destroys your precision score. Evidence-based reasoning wins."
+
+*[Click Fraud Report tab]*
+
+> "The severity breakdown: 84.9% of the services payment category is ring fraud — category capture signal, worth 3.4 out of 10. Two structuring bands — 29 transactions near $500, 44 near $900 — worth 2.5. Four sink mule accounts — worth 2.0. Burst velocity and the sleeper bring it to 9.4 raw. Geodo multiplies by 1.33."
+
+> "PyMC gives us the confidence interval. 94% probability, plus or minus 3%. That's not a black box — that's Bayesian inference showing you exactly how much each signal moved the needle."
 
 ---
 
-**[4:30 – 5:00] — Close**
+## [3:30–4:30] SAR REPORT — Download
 
-*(Zoom out to show the full dashboard)*
+*[Show the Fraud Report panel]*
 
-> "RingAlert uses five agents — all handing off through Cognee's knowledge graph. PyMC for Bayesian risk scores. Claude API for case briefs. And a UI that requires zero training.
->
-> The fraud ring that hid from every rule? It can't hide from a graph.
->
-> This is RingAlert. vibeFORWARD: M-2, Track 02."
+> "The output isn't a dashboard widget. It's a Suspicious Activity Report — the actual document fraud analysts file with FinCEN."
+
+*[Point at the typology badges: ML-027, ML-008, ML-041]*
+
+> "Three FinCEN typologies confirmed by Geodo. SAR mandatory under 31 CFR 1020.320."
+
+*[Click Download SAR button]*
+
+> "One click. Downloadable. Analyst opens this, sees the accounts, sees the evidence, sees the regulatory citation, and files. Three minutes from upload to SAR. A human doing this manually takes four hours."
+
+> "And the moment severity hit 9.4 — above our 7.0 threshold — Agent 7 fired a Slack alert to the compliance team with the account list, exposure amount, and action required. No analyst has to check a dashboard. The system calls them."
+
+---
+
+## [4:30–5:00] CLOSE
+
+> "RingAlert is built on Cognee as the memory layer between all seven agents. Every handoff — every read and write — goes through Cognee. No agent calls another agent directly. The graph is the shared state."
+
+> "Geodo gives us regulatory grounding. PyMC gives us probabilistic confidence. The result is a system that doesn't just detect fraud — it explains exactly why, in language a compliance officer can act on, in under three minutes."
+
+> "Track 02. Fraud Watch. RingAlert."
+
+*[Hold on the dashboard for 3 seconds, then stop recording]*
 
 ---
 
 ## POST-RECORDING CHECKLIST
-- [ ] Video is under 5 minutes (Trupeer will trim if needed)
-- [ ] All 5 agent status lights are visible going green
-- [ ] Case brief is clearly readable
-- [ ] Both action buttons are clicked on camera
-- [ ] No terminal or code visible during the demo (judges see the product, not the code)
-- [ ] Upload to Trupeer and copy the URL for Devpost submission
 
----
-
-## TIPS FOR A GREAT TRUPEER RECORDING
-- Speak at a natural pace — Trupeer removes filler words automatically
-- Move your cursor deliberately to each element before clicking — Trupeer will auto-zoom
-- If you make a mistake, pause 3 seconds and continue — Trupeer can cut it
-- Record in Chrome, full screen, 1920×1080 if possible
+- [ ] Video is 4:45–5:15 minutes (trim if needed)
+- [ ] AC-0012 sleeper moment is clearly on screen and narrated
+- [ ] Geodo typology codes (ML-027, ML-008, ML-041) visible in log
+- [ ] PyMC severity "9.4/10, 94% ±3%" appears in the report panel
+- [ ] SAR download button is clicked on camera
+- [ ] Upload to Trupeer → get shareable link
+- [ ] Add link to Devpost submission before 5:00 PM

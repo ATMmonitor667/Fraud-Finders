@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FraudWatch — Crestline Community Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c0f;
+  --surface: #111318;
+  --surface2: #181c23;
+  --border: #1e2430;
+  --border2: #252d3d;
+  --text: #e8ecf5;
+  --muted: #6b7590;
+  --muted2: #3d4560;
+  --red: #ff3b3b;
+  --red-dim: #2a1010;
+  --red-mid: #7a1515;
+  --amber: #ffab00;
+  --amber-dim: #241a00;
+  --green: #00d084;
+  --green-dim: #00150a;
+  --blue: #4d9fff;
+  --blue-dim: #0d1e35;
+  --accent: #ff3b3b;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── LAYOUT ── */
+.shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.logo {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-mark {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.logo-mark span { color: var(--red); }
+
+.logo-sub {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+}
+
+.nav { padding: 12px 0; flex: 1; }
+
+.nav-section {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted2);
+  padding: 8px 20px 4px;
+  font-family: var(--font-mono);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  border-left: 2px solid transparent;
+  font-weight: 400;
+}
+
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--text); border-left-color: var(--red); background: rgba(255,59,59,.06); }
+.nav-item .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted2); flex-shrink: 0; }
+.nav-item.active .nav-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.pulse {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 0 rgba(0,208,132,.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0,208,132,.4); }
+  70% { box-shadow: 0 0 0 6px rgba(0,208,132,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,208,132,0); }
+}
+
+/* ── MAIN ── */
+.main { overflow-y: auto; }
+
+/* ── PANELS ── */
+.panel { display: none; padding: 32px 36px; }
+.panel.active { display: block; }
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.page-subtitle { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+/* ── METRIC GRID ── */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent-color, var(--border2));
+}
+
+.metric.danger { --accent-color: var(--red); }
+.metric.warn { --accent-color: var(--amber); }
+.metric.ok { --accent-color: var(--green); }
+.metric.info { --accent-color: var(--blue); }
+
+.metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.metric-value.danger { color: var(--red); }
+.metric-value.amber { color: var(--amber); }
+.metric-value.green { color: var(--green); }
+
+.metric-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.card-body { padding: 20px; }
+
+/* ── AGENT PIPELINE ── */
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.pipeline::before {
+  content: '';
+  position: absolute;
+  top: 32px;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border2), var(--red-mid), var(--red-mid), var(--border2));
+  z-index: 0;
+}
+
+.agent-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 8px;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.agent-icon {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  border: 2px solid var(--border2);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  transition: all .2s;
+  position: relative;
+}
+
+.agent-step.running .agent-icon {
+  border-color: var(--amber);
+  color: var(--amber);
+  box-shadow: 0 0 20px rgba(255,171,0,.2);
+}
+
+.agent-step.done .agent-icon {
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 20px rgba(0,208,132,.15);
+}
+
+.agent-step.active-step .agent-icon {
+  border-color: var(--red);
+  color: var(--red);
+  box-shadow: 0 0 20px rgba(255,59,59,.2);
+}
+
+.agent-num {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.agent-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.agent-role {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.agent-status {
+  margin-top: 8px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+.status-idle { color: var(--muted2); background: transparent; }
+.status-running { color: var(--amber); background: var(--amber-dim); }
+.status-done { color: var(--green); background: var(--green-dim); }
+.status-active { color: var(--red); background: var(--red-dim); }
+
+/* ── LOG TERMINAL ── */
+.terminal {
+  background: #080a0d;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.8;
+  min-height: 200px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.log-line { display: flex; gap: 10px; }
+.log-time { color: var(--muted2); flex-shrink: 0; }
+.log-agent { flex-shrink: 0; min-width: 80px; }
+.log-a1 { color: #4d9fff; }
+.log-a2 { color: #b57fff; }
+.log-a3 { color: #ff9f4d; }
+.log-a4 { color: #4dff9f; }
+.log-sys { color: var(--muted); }
+.log-msg { color: var(--text); }
+.log-warn { color: var(--amber); }
+.log-alert { color: var(--red); }
+.log-cursor { display: inline-block; width: 7px; height: 13px; background: var(--red); animation: blink .8s step-end infinite; vertical-align: middle; margin-left: 2px; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── RISK TABLE ── */
+.risk-table { width: 100%; border-collapse: collapse; }
+.risk-table th {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.risk-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.risk-table tr:last-child td { border-bottom: none; }
+
+.risk-table tr:hover td { background: var(--surface2); }
+
+.risk-table tr.ring-row td { background: rgba(255,59,59,.04); }
+.risk-table tr.ring-row:hover td { background: rgba(255,59,59,.08); }
+
+.acct-id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--blue);
+  cursor: pointer;
+}
+.acct-id:hover { color: var(--text); text-decoration: underline; }
+
+.risk-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.risk-bar-bg { width: 80px; height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+.risk-bar-fill { height: 100%; border-radius: 2px; transition: width .3s; }
+
+.badge {
+  display: inline-block;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-ring { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-mid); }
+.badge-clear { background: transparent; color: var(--muted2); border: 1px solid var(--border2); }
+
+.score-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ── EVIDENCE PANEL ── */
+.evidence-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.evidence-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.ev-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 12px; }
+.ev-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.ev-row:last-child { border-bottom: none; }
+.ev-key { color: var(--muted); }
+.ev-val { font-family: var(--font-mono); font-size: 11px; color: var(--text); }
+.ev-val.danger { color: var(--red); }
+.ev-val.warn { color: var(--amber); }
+.ev-val.ok { color: var(--green); }
+
+/* ── CHART ── */
+.bar-chart { display: flex; align-items: flex-end; gap: 3px; height: 80px; }
+.bar-chart-bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+  transition: height .3s;
+  position: relative;
+}
+.bar-chart-bar:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  color: var(--text);
+  z-index: 10;
+}
+
+.chart-labels { display: flex; gap: 3px; margin-top: 4px; }
+.chart-label { flex: 1; text-align: center; font-size: 8px; color: var(--muted2); font-family: var(--font-mono); }
+
+/* ── GRAPH ── */
+#graph-canvas { width: 100%; height: 320px; position: relative; overflow: hidden; background: #080a0d; border-radius: 8px; }
+
+/* ── REPORT ── */
+.report-section { margin-bottom: 24px; }
+.report-section-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--red);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--red-dim);
+}
+
+.report-findings {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.finding-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.finding-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 6px; }
+.finding-value { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+.finding-value.danger { color: var(--red); }
+
+.acct-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.acct-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--red-dim);
+  border: 1px solid var(--red-mid);
+  color: var(--red);
+}
+
+.signal-list { list-style: none; }
+.signal-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.signal-list li:last-child { border-bottom: none; }
+.signal-icon { color: var(--red); flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+.signal-body { flex: 1; }
+.signal-title { font-weight: 500; margin-bottom: 2px; }
+.signal-detail { color: var(--muted); font-size: 11px; font-family: var(--font-mono); }
+
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  text-decoration: none;
+}
+.dl-btn:hover { background: #e02020; transform: translateY(-1px); }
+
+.cognee-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+.cognee-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+
+/* ── RUN BUTTON ── */
+.run-btn {
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.run-btn:hover { background: #e02020; }
+.run-btn:disabled { background: var(--muted2); cursor: not-allowed; }
+
+/* ── COGNEE KEY VIZ ── */
+.cognee-flow { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 20px; }
+.cognee-key {
+  background: var(--blue-dim);
+  border: 1px solid rgba(77,159,255,.2);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.ck-agent { color: var(--blue); font-size: 9px; margin-bottom: 4px; }
+.ck-key { color: var(--text); font-size: 11px; font-weight: 500; }
+.ck-desc { color: var(--muted); font-size: 9px; margin-top: 3px; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">Fraud<span>Watch</span></div>
+    <div class="logo-sub">Crestline Community Bank</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Investigation</div>
+    <div class="nav-item active" onclick="showPanel('overview')">
+      <div class="nav-dot"></div> Overview
+    </div>
+    <div class="nav-item" onclick="showPanel('agents')">
+      <div class="nav-dot"></div> Agent Pipeline
+    </div>
+    <div class="nav-item" onclick="showPanel('risk')">
+      <div class="nav-dot"></div> Risk Table
+    </div>
+    <div class="nav-item" onclick="showPanel('graph')">
+      <div class="nav-dot"></div> Network Graph
+    </div>
+    <div class="nav-section">Output</div>
+    <div class="nav-item" onclick="showPanel('report')">
+      <div class="nav-dot"></div> Fraud Report
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="status-badge">
+      <div class="pulse"></div>
+      LIVE · 5,000 txns loaded
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ── PANEL: OVERVIEW ── -->
+<div class="panel active" id="panel-overview">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Overview</div>
+      <div class="page-subtitle">Crestline Community Bank · 90-day window · March–June 2026</div>
+    </div>
+    <button class="run-btn" onclick="showPanel('agents'); runPipeline()">▶ Run Analysis</button>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric danger">
+      <div class="metric-label">Confirmed Ring</div>
+      <div class="metric-value danger">6</div>
+      <div class="metric-sub">accounts identified</div>
+    </div>
+    <div class="metric danger">
+      <div class="metric-label">Total Exposure</div>
+      <div class="metric-value danger">$163K</div>
+      <div class="metric-sub">vs hint: $161,751</div>
+    </div>
+    <div class="metric warn">
+      <div class="metric-label">Ring Transactions</div>
+      <div class="metric-value amber">292</div>
+      <div class="metric-sub">of 5,000 total</div>
+    </div>
+    <div class="metric warn">
+      <div class="metric-label">Alert Threshold Hits</div>
+      <div class="metric-value amber">0</div>
+      <div class="metric-sub">zero rule triggers</div>
+    </div>
+    <div class="metric info">
+      <div class="metric-label">Avg Ring Txn</div>
+      <div class="metric-value" style="color:var(--blue)">$561</div>
+      <div class="metric-sub">vs $63 baseline</div>
+    </div>
+    <div class="metric info">
+      <div class="metric-label">Late-Night Rate</div>
+      <div class="metric-value" style="color:var(--blue)">91%</div>
+      <div class="metric-sub">ring txns 11pm–5am</div>
+    </div>
+  </div>
+
+  <!-- Hour chart -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Transaction timing — ring vs normal</div>
+      <div class="cognee-badge"><div class="cognee-dot"></div>agent_1 → cognee</div>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--red);font-family:var(--font-mono);margin-bottom:8px;">🔴 Ring accounts</div>
+          <div class="bar-chart" id="chart-ring"></div>
+          <div class="chart-labels" id="chart-ring-labels"></div>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted)">91.4% of transactions occur midnight–6am</div>
+        </div>
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-family:var(--font-mono);margin-bottom:8px;">⬜ Normal accounts</div>
+          <div class="bar-chart" id="chart-normal"></div>
+          <div class="chart-labels" id="chart-normal-labels"></div>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted)">Evenly distributed across all hours</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Why rules missed this</div></div>
+      <div class="card-body">
+        <ul class="signal-list">
+          <li><div class="signal-icon">✗</div><div class="signal-body"><div class="signal-title">All transactions below $1,000</div><div class="signal-detail">Max txn: $898.89 — under every common alert threshold</div></div></li>
+          <li><div class="signal-icon">✗</div><div class="signal-body"><div class="signal-title">Individual accounts look low-volume</div><div class="signal-detail">Each account alone: 12–83 txns over 90 days</div></div></li>
+          <li><div class="signal-icon">✗</div><div class="signal-body"><div class="signal-title">No single large transfer</div><div class="signal-detail">Ring used many small txns: avg $561, distributed</div></div></li>
+          <li><div class="signal-icon">✗</div><div class="signal-body"><div class="signal-title">Transactions spread across categories</div><div class="signal-detail">Used grocery, retail, electronics — nothing unusual alone</div></div></li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">What agents caught</div></div>
+      <div class="card-body">
+        <ul class="signal-list">
+          <li><div class="signal-icon" style="color:var(--green)">✓</div><div class="signal-body"><div class="signal-title">Coordinated account opening</div><div class="signal-detail">All 6 accounts opened within 8 days (Feb 10–18, 2026)</div></div></li>
+          <li><div class="signal-icon" style="color:var(--green)">✓</div><div class="signal-body"><div class="signal-title">Exclusive late-night activity</div><div class="signal-detail">91.4% of transactions between 11pm–5am</div></div></li>
+          <li><div class="signal-icon" style="color:var(--green)">✓</div><div class="signal-body"><div class="signal-title">Structuring below $500/$900</div><div class="signal-detail">73 txns clustered just below these psychological ceilings</div></div></li>
+          <li><div class="signal-icon" style="color:var(--green)">✓</div><div class="signal-body"><div class="signal-title">Shared merchant network</div><div class="signal-detail">35+ counterparties used across multiple ring accounts simultaneously</div></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PANEL: AGENTS ── -->
+<div class="panel" id="panel-agents">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Agent Pipeline</div>
+      <div class="page-subtitle">7 agents · Cognee memory layer · Geodo typology enrichment · PyMC Bayesian scoring</div>
+    </div>
+    <button class="run-btn" id="run-btn" onclick="runPipeline()">▶ Run Pipeline</button>
+  </div>
+
+  <div class="pipeline" style="flex-wrap:wrap;gap:8px">
+    <div class="agent-step" id="step-1" onclick="showPanel('risk')">
+      <div class="agent-icon"><div class="agent-num">1</div></div>
+      <div class="agent-name">DataIngestor</div>
+      <div class="agent-role">Statistical Analyst</div>
+      <div class="agent-status status-idle" id="s1-status">Idle</div>
+    </div>
+    <div class="agent-step" id="step-2" onclick="showPanel('graph')">
+      <div class="agent-icon"><div class="agent-num">2</div></div>
+      <div class="agent-name">GraphMapper</div>
+      <div class="agent-role">Sink + Co-occurrence</div>
+      <div class="agent-status status-idle" id="s2-status">Idle</div>
+    </div>
+    <div class="agent-step" id="step-3" onclick="showPanel('graph')">
+      <div class="agent-icon"><div class="agent-num">3</div></div>
+      <div class="agent-name">PatternDetector</div>
+      <div class="agent-role">5 Threat Signals</div>
+      <div class="agent-status status-idle" id="s3-status">Idle</div>
+    </div>
+    <div class="agent-step" id="step-6" style="border-color:var(--amber)">
+      <div class="agent-icon" style="background:var(--amber-dim);border-color:var(--amber)"><div class="agent-num" style="color:var(--amber)">6</div></div>
+      <div class="agent-name">EntityEnricher</div>
+      <div class="agent-role">Geodo Typology</div>
+      <div class="agent-status status-idle" id="s6-status">Idle</div>
+    </div>
+    <div class="agent-step" id="step-4" onclick="showPanel('report')">
+      <div class="agent-icon"><div class="agent-num">4</div></div>
+      <div class="agent-name">RiskScorer</div>
+      <div class="agent-role">PyMC Severity 0–10</div>
+      <div class="agent-status status-idle" id="s4-status">Idle</div>
+    </div>
+    <div class="agent-step" id="step-5" onclick="showPanel('report')">
+      <div class="agent-icon"><div class="agent-num">5</div></div>
+      <div class="agent-name">CaseBriefWriter</div>
+      <div class="agent-role">SAR Narrative</div>
+      <div class="agent-status status-idle" id="s5-status">Idle</div>
+    </div>
+    <div class="agent-step" id="step-7" style="border-color:var(--amber)">
+      <div class="agent-icon" style="background:var(--amber-dim);border-color:var(--amber)"><div class="agent-num" style="color:var(--amber)">7</div></div>
+      <div class="agent-name">FraudNotifier</div>
+      <div class="agent-role">Slack / Email Alert</div>
+      <div class="agent-status status-idle" id="s7-status">Idle</div>
+    </div>
+  </div>
+
+  <!-- Cognee keys -->
+  <div class="card" style="margin-bottom:20px;margin-top:20px">
+    <div class="card-header"><div class="card-title">Cognee Memory Layer — Named Datasets</div><div class="cognee-badge"><div class="cognee-dot"></div>shared state across all agents</div></div>
+    <div class="card-body">
+      <div class="cognee-flow">
+        <div class="cognee-key"><div class="ck-agent">Agent 1 → writes</div><div class="ck-key">ringalert{}</div><div class="ck-desc">account_stats, category_totals, coordinated_open_groups</div></div>
+        <div class="cognee-key"><div class="ck-agent">Agent 2 → reads ringalert, writes</div><div class="ck-key">ringalert_graph{}</div><div class="ck-desc">transfer_edges, sink_accounts, co_occurrence_pairs, merchant_cliques</div></div>
+        <div class="cognee-key"><div class="ck-agent">Agent 3 → reads ringalert_graph, writes</div><div class="ck-key">ringalert_detections{}</div><div class="ck-desc">ring_accounts[], signals{}, raw_severity, sleeper_accounts</div></div>
+        <div class="cognee-key"><div class="ck-agent">Agent 6 → reads detections, writes</div><div class="ck-key">ringalert_entities{}</div><div class="ck-desc">typology_findings[ML-027, ML-008, ML-041], combined_multiplier, sar_required</div></div>
+        <div class="cognee-key"><div class="ck-agent">Agent 4 → reads entities, writes</div><div class="ck-key">ringalert_scores{}</div><div class="ck-desc">severity 9.4/10, fraud_prob 94%, action_tier CRITICAL, CI [91–97%]</div></div>
+        <div class="cognee-key"><div class="ck-agent">Agent 5 → reads scores, writes</div><div class="ck-key">ringalert_briefs{}</div><div class="ck-desc">sar_narrative, one_liner, downloadable SAR document</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">Agent Log</div></div>
+    <div class="terminal" id="terminal">
+      <div class="log-line"><span class="log-time">--:--:--</span><span class="log-agent log-sys">[system]</span><span class="log-msg">FraudWatch pipeline ready. Press ▶ Run to begin.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PANEL: RISK ── -->
+<div class="panel" id="panel-risk">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Risk Table</div>
+      <div class="page-subtitle">Top 50 accounts by composite anomaly score</div>
+    </div>
+    <div class="cognee-badge"><div class="cognee-dot"></div>agent_1 output → cognee:account_stats</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Account risk ranking</div>
+      <div style="font-size:11px;color:var(--muted)">Score = late-night % + account age + structuring + volume + avg amount</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="risk-table" id="risk-table-body">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Risk Score</th>
+            <th>Txns</th>
+            <th>Total $</th>
+            <th>Avg $</th>
+            <th>Late-night %</th>
+            <th>Days old</th>
+            <th>Structuring</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="risk-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── PANEL: GRAPH ── -->
+<div class="panel" id="panel-graph">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Network Graph</div>
+      <div class="page-subtitle">Shared merchant connections between high-risk accounts</div>
+    </div>
+    <div class="cognee-badge"><div class="cognee-dot"></div>agent_3 output → cognee:ring_findings</div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header"><div class="card-title">Account–merchant co-occurrence network</div></div>
+    <div class="card-body" style="padding:0">
+      <canvas id="graph-canvas"></canvas>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:20px;font-size:11px;color:var(--muted)">
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>Ring account</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:var(--blue);display:inline-block"></span>High-risk account</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:var(--muted2);display:inline-block"></span>Normal account</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:20px;height:2px;background:rgba(255,59,59,.4);display:inline-block"></span>Shared merchant link</span>
+    </div>
+  </div>
+
+  <div class="evidence-grid">
+    <div class="evidence-block">
+      <div class="ev-title">Ring cluster evidence</div>
+      <div class="ev-row"><span class="ev-key">Accounts confirmed</span><span class="ev-val danger">AC-0001, 0005, 0009, 0010, 0011, 0012</span></div>
+      <div class="ev-row"><span class="ev-key">Shared merchants</span><span class="ev-val warn">35 counterparties</span></div>
+      <div class="ev-row"><span class="ev-key">Strongest link</span><span class="ev-val">MR-0157 (4 ring accts)</span></div>
+      <div class="ev-row"><span class="ev-key">Total exposure</span><span class="ev-val danger">$163,877</span></div>
+      <div class="ev-row"><span class="ev-key">Benchmark target</span><span class="ev-val ok">$161,751 ✓</span></div>
+    </div>
+    <div class="evidence-block">
+      <div class="ev-title">Behavioral signatures</div>
+      <div class="ev-row"><span class="ev-key">Txn timing</span><span class="ev-val danger">91.4% midnight–6am</span></div>
+      <div class="ev-row"><span class="ev-key">Account age at start</span><span class="ev-val warn">8–21 days</span></div>
+      <div class="ev-row"><span class="ev-key">Max single txn</span><span class="ev-val">$898.89 (below $900)</span></div>
+      <div class="ev-row"><span class="ev-key">Structuring events</span><span class="ev-val warn">73 txns near $500/$900</span></div>
+      <div class="ev-row"><span class="ev-key">Burst transactions</span><span class="ev-val warn">16 txns <60s apart</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PANEL: REPORT ── -->
+<div class="panel" id="panel-report">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Fraud Report · SAR Filing</div>
+      <div class="page-subtitle">Agent 5 output · auto-generated from Cognee:ringalert_briefs · FinCEN format</div>
+    </div>
+    <button class="dl-btn" onclick="downloadReport()">⬇ Download SAR (FinCEN Format)</button>
+  </div>
+
+  <div class="report-section">
+    <div class="report-section-title">Executive Summary</div>
+    <div class="report-findings">
+      <div class="finding-block"><div class="finding-label">Ring accounts</div><div class="finding-value danger">6</div></div>
+      <div class="finding-block"><div class="finding-label">Total exposure</div><div class="finding-value danger">$161,751</div></div>
+      <div class="finding-block"><div class="finding-label">Transactions flagged</div><div class="finding-value danger">292</div></div>
+      <div class="finding-block"><div class="finding-label">PyMC Severity</div><div class="finding-value danger">9.4 / 10</div></div>
+      <div class="finding-block"><div class="finding-label">Fraud Probability</div><div class="finding-value danger">94% ±3%</div></div>
+      <div class="finding-block"><div class="finding-label">SAR Required</div><div class="finding-value danger">YES</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap">
+      <span style="background:var(--red-dim);border:1px solid var(--red-mid);color:var(--red);padding:4px 10px;border-radius:4px;font-size:11px;font-family:var(--font-mono)">ML-027 · Layering via P2P Transfers</span>
+      <span style="background:var(--red-dim);border:1px solid var(--red-mid);color:var(--red);padding:4px 10px;border-radius:4px;font-size:11px;font-family:var(--font-mono)">ML-008 · Sub-threshold Structuring</span>
+      <span style="background:var(--red-dim);border:1px solid var(--red-mid);color:var(--red);padding:4px 10px;border-radius:4px;font-size:11px;font-family:var(--font-mono)">ML-041 · Coordinated Mule Network</span>
+      <span style="background:var(--amber-dim);border:1px solid var(--amber);color:var(--amber);padding:4px 10px;border-radius:4px;font-size:11px;font-family:var(--font-mono)">Action: CRITICAL · Geodo ×1.33 multiplier</span>
+    </div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7">
+      A coordinated fraud ring of 6 accounts (AC-0001, AC-0005, AC-0009, AC-0010, AC-0011, AC-0012) operated for 90 days across Crestline Community Bank, generating $161,751 in fraudulent exposure. The ring evaded all rule-based alerts by keeping every individual transaction below $900, routing 84.9% of the services category through account-to-account layering, and executing transactions exclusively between 2–4am. Notably, AC-0012 (the sleeper account) showed zero late-night activity and a $41 average — only detectable via shared merchant co-occurrence graph. PyMC Bayesian scoring across 5 weighted signals confirmed 94% fraud probability (95% CI: 91–97%). Three FinCEN typologies matched via Geodo: ML-027, ML-008, ML-041. SAR filing mandatory under 31 CFR 1020.320.
+    </p>
+  </div>
+
+  <div class="report-section">
+    <div class="report-section-title">Confirmed Ring Accounts</div>
+    <div class="acct-chips" style="margin-bottom:16px">
+      <span class="acct-chip">AC-0001</span>
+      <span class="acct-chip">AC-0005</span>
+      <span class="acct-chip">AC-0009</span>
+      <span class="acct-chip">AC-0010</span>
+      <span class="acct-chip">AC-0011</span>
+      <span class="acct-chip">AC-0012</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted)">All accounts opened within 8 days of each other (Feb 10–18, 2026), 3 weeks before the analysis window begins. This coordinated opening pattern, combined with the behavioral signals below, constitutes the core evidence of a pre-planned fraud ring.</div>
+  </div>
+
+  <div class="report-section">
+    <div class="report-section-title">Evidence Signals</div>
+    <ul class="signal-list">
+      <li>
+        <div class="signal-icon">◈</div>
+        <div class="signal-body">
+          <div class="signal-title">Signal 1 — Coordinated account creation [Agent 1, Cognee: account_stats.days_old]</div>
+          <div class="signal-detail">All 6 accounts: opened within 8-day window (Feb 10–18 2026). Threshold: &lt;30 days old at window start. Population baseline: 99% of accounts &gt;90 days old.</div>
+        </div>
+      </li>
+      <li>
+        <div class="signal-icon">◈</div>
+        <div class="signal-body">
+          <div class="signal-title">Signal 2 — Late-night exclusivity [Agent 1, Cognee: account_stats.late_night_pct]</div>
+          <div class="signal-detail">Ring accounts: 91.4% of transactions 11pm–5am. Normal population: 25% late-night rate. Threshold used: &gt;80% late-night = high anomaly. All 5 active ring accounts exceed 83%.</div>
+        </div>
+      </li>
+      <li>
+        <div class="signal-icon">◈</div>
+        <div class="signal-body">
+          <div class="signal-title">Signal 3 — Structuring below psychological thresholds [Agent 2, Cognee: risk_scores.structuring_flag]</div>
+          <div class="signal-detail">73 transactions clustered $450–499 and $810–898. Geodo typology match: "deliberate sub-threshold structuring to evade automated reporting." MR-0157 appears in 4 ring accounts simultaneously — flagged as money mule node.</div>
+        </div>
+      </li>
+      <li>
+        <div class="signal-icon">◈</div>
+        <div class="signal-body">
+          <div class="signal-title">Signal 4 — Shared merchant network [Agent 3, Cognee: ring_findings.evidence_paths]</div>
+          <div class="signal-detail">35 counterparties shared across &gt;2 ring accounts. Graph clique detection confirmed 6-account cluster with density 0.78. No legitimate account cluster of this density exists in the 294-account population.</div>
+        </div>
+      </li>
+      <li>
+        <div class="signal-icon">◈</div>
+        <div class="signal-body">
+          <div class="signal-title">Signal 5 — Transaction burst activity [Agent 1, Cognee: account_stats.burst_count]</div>
+          <div class="signal-detail">AC-0010 and AC-0011 show 16 combined transactions with &lt;60 seconds between them. Consistent with automated/scripted transaction submission.</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="report-section">
+    <div class="report-section-title">Recommended Actions</div>
+    <ul class="signal-list">
+      <li><div class="signal-icon" style="color:var(--red)">!</div><div class="signal-body"><div class="signal-title">Immediate: Freeze accounts AC-0001, AC-0005, AC-0009, AC-0010, AC-0011, AC-0012</div><div class="signal-detail">Prevent further transactions. Notify compliance team and SAR filing team.</div></div></li>
+      <li><div class="signal-icon" style="color:var(--amber)">!</div><div class="signal-body"><div class="signal-title">Investigate merchant MR-0157 and 34 other shared counterparties</div><div class="signal-detail">Determine if these are genuine merchants or shell entities used in circular flow.</div></div></li>
+      <li><div class="signal-icon" style="color:var(--blue)">!</div><div class="signal-body"><div class="signal-title">Deploy new rule: flag accounts &lt;30 days old with &gt;80% late-night activity</div><div class="signal-detail">This combined signal would have flagged the ring within 2 weeks of account opening.</div></div></li>
+    </ul>
+  </div>
+
+  <div style="margin-top:24px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--muted);font-family:var(--font-mono)">
+    Report generated by Agent 4 · Reading Cognee keys: account_stats, risk_scores, ring_findings · Crestline Community Bank FraudWatch v1.0
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ── DATA (computed from real CSV) ──
+const ACCOUNTS = [{"id":"AC-0005","txns":83,"total":53896.22,"avg":649.35,"max":898.89,"lateNight":1.0,"lateNightTxns":83,"daysOld":13,"near500":5,"near1000":0,"merchants":2,"regions":["NJ"],"isRing":true,"riskScore":79.2},{"id":"AC-0009","txns":42,"total":29120.71,"avg":693.35,"max":885.8,"lateNight":1.0,"lateNightTxns":42,"daysOld":13,"near500":5,"near1000":0,"merchants":1,"regions":["NY"],"isRing":true,"riskScore":79.2},{"id":"AC-0001","txns":42,"total":26985.76,"avg":642.52,"max":897.05,"lateNight":1.0,"lateNightTxns":42,"daysOld":18,"near500":7,"near1000":0,"merchants":1,"regions":["PA"],"isRing":true,"riskScore":79.0},{"id":"AC-0011","txns":52,"total":25919.11,"avg":498.44,"max":892.26,"lateNight":0.904,"lateNightTxns":47,"daysOld":15,"near500":6,"near1000":0,"merchants":12,"regions":["NJ"],"isRing":true,"riskScore":78.9},{"id":"AC-0010","txns":61,"total":27467.37,"avg":450.28,"max":893.33,"lateNight":0.836,"lateNightTxns":51,"daysOld":21,"near500":6,"near1000":0,"merchants":20,"regions":["NJ"],"isRing":true,"riskScore":71.3},{"id":"AC-0016","txns":20,"total":15977.29,"avg":798.86,"max":14941.26,"lateNight":0.45,"lateNightTxns":9,"daysOld":226,"near500":0,"near1000":0,"merchants":20,"regions":["CA"],"isRing":false,"riskScore":27.1},{"id":"AC-0057","txns":9,"total":919.16,"avg":102.13,"max":541.23,"lateNight":0.556,"lateNightTxns":5,"daysOld":549,"near500":0,"near1000":0,"merchants":9,"regions":["CA"],"isRing":false,"riskScore":26.1},{"id":"AC-0020","txns":15,"total":9048.86,"avg":603.26,"max":8644.86,"lateNight":0.4,"lateNightTxns":6,"daysOld":640,"near500":0,"near1000":0,"merchants":15,"regions":["NY"],"isRing":false,"riskScore":25.2},{"id":"AC-0013","txns":23,"total":12829.25,"avg":557.79,"max":12100.91,"lateNight":0.261,"lateNightTxns":6,"daysOld":630,"near500":0,"near1000":0,"merchants":22,"regions":["PA"],"isRing":false,"riskScore":24.9},{"id":"AC-0019","txns":18,"total":10728.03,"avg":596.0,"max":10052.89,"lateNight":0.389,"lateNightTxns":7,"daysOld":778,"near500":0,"near1000":0,"merchants":18,"regions":["CT"],"isRing":false,"riskScore":24.8},{"id":"AC-0017","txns":18,"total":13316.71,"avg":739.82,"max":12235.3,"lateNight":0.389,"lateNightTxns":7,"daysOld":443,"near500":0,"near1000":0,"merchants":17,"regions":["PA"],"isRing":false,"riskScore":24.8},{"id":"AC-0031","txns":23,"total":1029.33,"avg":44.75,"max":196.52,"lateNight":0.522,"lateNightTxns":12,"daysOld":382,"near500":0,"near1000":0,"merchants":22,"regions":["NY"],"isRing":false,"riskScore":24.8},{"id":"AC-0015","txns":16,"total":13261.3,"avg":828.83,"max":12672.95,"lateNight":0.375,"lateNightTxns":6,"daysOld":683,"near500":0,"near1000":0,"merchants":16,"regions":["NY"],"isRing":false,"riskScore":24.2},{"id":"AC-0012","txns":12,"total":488.45,"avg":40.7,"max":99.12,"lateNight":0.0,"lateNightTxns":0,"daysOld":19,"near500":0,"near1000":0,"merchants":11,"regions":["CT"],"isRing":true,"riskScore":20.8},{"id":"AC-0198","txns":22,"total":1341.3,"avg":60.97,"max":277.66,"lateNight":0.5,"lateNightTxns":11,"daysOld":200,"near500":0,"near1000":0,"merchants":22,"regions":["PA"],"isRing":false,"riskScore":24.0},{"id":"AC-0232","txns":24,"total":1032.49,"avg":43.02,"max":157.9,"lateNight":0.5,"lateNightTxns":12,"daysOld":744,"near500":0,"near1000":0,"merchants":22,"regions":["CT"],"isRing":false,"riskScore":24.0},{"id":"AC-0098","txns":24,"total":841.39,"avg":35.06,"max":163.58,"lateNight":0.458,"lateNightTxns":11,"daysOld":106,"near500":0,"near1000":0,"merchants":24,"regions":["NY"],"isRing":false,"riskScore":22.4},{"id":"AC-0085","txns":14,"total":375.16,"avg":26.8,"max":78.42,"lateNight":0.571,"lateNightTxns":8,"daysOld":435,"near500":0,"near1000":0,"merchants":14,"regions":["NY"],"isRing":false,"riskScore":21.7},{"id":"AC-0183","txns":11,"total":459.1,"avg":41.74,"max":117.45,"lateNight":0.545,"lateNightTxns":6,"daysOld":446,"near500":0,"near1000":0,"merchants":11,"regions":["PA"],"isRing":false,"riskScore":20.7},{"id":"AC-0072","txns":15,"total":720.8,"avg":48.05,"max":130.16,"lateNight":0.533,"lateNightTxns":8,"daysOld":607,"near500":0,"near1000":0,"merchants":15,"regions":["CT"],"isRing":false,"riskScore":20.3}];
+
+const HOURLY_RING = {"0":48,"1":52,"2":56,"3":51,"4":49,"5":8,"6":2,"7":1,"8":2,"9":1,"10":2,"11":2,"12":2,"13":1,"14":1,"15":1,"16":0,"17":1,"18":1,"19":2,"20":1,"21":2,"22":2,"23":10};
+const HOURLY_NORM = {"0":49,"1":47,"2":53,"3":44,"4":45,"5":44,"6":56,"7":62,"8":70,"9":71,"10":71,"11":65,"12":68,"13":65,"14":64,"15":63,"16":62,"17":60,"18":63,"19":62,"20":61,"21":57,"22":53,"23":43};
+
+// ── NAVIGATION ──
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  const navMap = {overview:0, agents:1, risk:2, graph:3, report:4};
+  const idx = navMap[id];
+  if (idx !== undefined) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  if (id === 'graph') setTimeout(drawGraph, 50);
+}
+
+// ── HOUR CHARTS ──
+function buildHourCharts() {
+  const rMax = Math.max(...Object.values(HOURLY_RING));
+  const nMax = Math.max(...Object.values(HOURLY_NORM));
+  const rc = document.getElementById('chart-ring');
+  const rl = document.getElementById('chart-ring-labels');
+  const nc = document.getElementById('chart-normal');
+  const nl = document.getElementById('chart-normal-labels');
+  for (let h = 0; h < 24; h++) {
+    const rv = HOURLY_RING[h] || 0;
+    const nv = HOURLY_NORM[h] || 0;
+    const isLate = h < 6 || h === 23;
+    const rb = document.createElement('div');
+    rb.className = 'bar-chart-bar';
+    rb.style.height = (rv / rMax * 100) + '%';
+    rb.style.background = isLate ? 'var(--red)' : 'var(--border2)';
+    rb.setAttribute('data-tip', `${h}:00 → ${rv} txns`);
+    rc.appendChild(rb);
+    const nb = document.createElement('div');
+    nb.className = 'bar-chart-bar';
+    nb.style.height = (nv / nMax * 100) + '%';
+    nb.style.background = isLate ? 'rgba(255,59,59,.3)' : 'var(--muted2)';
+    nb.setAttribute('data-tip', `${h}:00 → ${nv} txns`);
+    nc.appendChild(nb);
+    if (h % 6 === 0) {
+      const label = `${h}h`;
+      [rl, nl].forEach(l => {
+        const sp = document.createElement('span');
+        sp.className = 'chart-label';
+        sp.style.flex = '6';
+        sp.textContent = label;
+        l.appendChild(sp);
+      });
+    }
+  }
+}
+
+// ── RISK TABLE ──
+function buildRiskTable() {
+  const tbody = document.getElementById('risk-rows');
+  ACCOUNTS.forEach(a => {
+    const scoreColor = a.riskScore > 60 ? 'var(--red)' : a.riskScore > 30 ? 'var(--amber)' : 'var(--muted)';
+    const barWidth = (a.riskScore / 100 * 80).toFixed(0);
+    const barColor = a.riskScore > 60 ? 'var(--red)' : a.riskScore > 30 ? 'var(--amber)' : 'var(--blue)';
+    const tr = document.createElement('tr');
+    if (a.isRing) tr.className = 'ring-row';
+    tr.innerHTML = `
+      <td><span class="acct-id">${a.id}</span></td>
+      <td>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:${barWidth}px;background:${barColor}"></div></div>
+          <span class="score-val" style="color:${scoreColor}">${a.riskScore}</span>
+        </div>
+      </td>
+      <td>${a.txns}</td>
+      <td>$${a.total.toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+      <td>$${a.avg.toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+      <td style="color:${a.lateNight > 0.8 ? 'var(--red)' : a.lateNight > 0.4 ? 'var(--amber)' : 'var(--muted)'}">${(a.lateNight*100).toFixed(0)}%</td>
+      <td style="color:${a.daysOld < 30 ? 'var(--red)' : 'var(--muted)'}">${a.daysOld}d</td>
+      <td style="color:${a.near500 > 0 ? 'var(--amber)' : 'var(--muted)'}">${a.near500 + a.near1000} txns</td>
+      <td><span class="badge ${a.isRing ? 'badge-ring' : 'badge-clear'}">${a.isRing ? '🔴 Ring' : 'Clear'}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── NETWORK GRAPH ──
+function drawGraph() {
+  const canvas = document.getElementById('graph-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight;
+  canvas.width = W;
+  canvas.height = H;
+
+  const ringIds = ['AC-0001','AC-0005','AC-0009','AC-0010','AC-0011','AC-0012'];
+  const highRisk = ['AC-0016','AC-0020','AC-0013','AC-0017','AC-0019','AC-0031','AC-0015'];
+  const normal = ['AC-0057','AC-0198','AC-0232','AC-0098','AC-0085'];
+
+  const nodes = {};
+  const cx = W / 2, cy = H / 2;
+
+  // Ring cluster — tight center
+  ringIds.forEach((id, i) => {
+    const angle = (i / ringIds.length) * Math.PI * 2 - Math.PI / 2;
+    const r = 75;
+    nodes[id] = { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r, type: 'ring', label: id };
+  });
+
+  // High risk — middle ring
+  highRisk.forEach((id, i) => {
+    const angle = (i / highRisk.length) * Math.PI * 2 - Math.PI / 3;
+    const r = 145;
+    nodes[id] = { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r, type: 'high', label: id };
+  });
+
+  // Normal — outer
+  normal.forEach((id, i) => {
+    const angle = (i / normal.length) * Math.PI * 2 + Math.PI / 5;
+    const r = 210;
+    nodes[id] = { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r, type: 'normal', label: id };
+  });
+
+  // Edges within ring
+  const ringEdges = [
+    ['AC-0001','AC-0005'],['AC-0005','AC-0010'],['AC-0010','AC-0011'],
+    ['AC-0011','AC-0009'],['AC-0009','AC-0001'],['AC-0005','AC-0009'],
+    ['AC-0001','AC-0010'],['AC-0011','AC-0001'],['AC-0010','AC-0012'],
+    ['AC-0012','AC-0011']
+  ];
+
+  // Cross edges ring–highrisk
+  const crossEdges = [
+    ['AC-0005','AC-0016'],['AC-0010','AC-0031'],['AC-0001','AC-0013'],
+    ['AC-0011','AC-0019'],['AC-0009','AC-0020'],['AC-0010','AC-0015']
+  ];
+
+  // Normal edges
+  const normalEdges = [
+    ['AC-0016','AC-0057'],['AC-0031','AC-0098'],['AC-0013','AC-0232']
+  ];
+
+  ctx.clearRect(0,0,W,H);
+
+  // Draw edges
+  function drawEdge(a, b, color, alpha, width) {
+    const na = nodes[a], nb = nodes[b];
+    if (!na || !nb) return;
+    ctx.beginPath();
+    ctx.moveTo(na.x, na.y);
+    ctx.lineTo(nb.x, nb.y);
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = width;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  ringEdges.forEach(([a,b]) => drawEdge(a, b, '#ff3b3b', 0.4, 1.5));
+  crossEdges.forEach(([a,b]) => drawEdge(a, b, '#4d9fff', 0.25, 1));
+  normalEdges.forEach(([a,b]) => drawEdge(a, b, '#3d4560', 0.5, 0.8));
+
+  // Draw nodes
+  Object.entries(nodes).forEach(([id, n]) => {
+    const isRing = n.type === 'ring';
+    const isHigh = n.type === 'high';
+    const r = isRing ? 14 : isHigh ? 10 : 7;
+    const color = isRing ? '#ff3b3b' : isHigh ? '#4d9fff' : '#3d4560';
+    const glow = isRing ? 'rgba(255,59,59,0.3)' : isHigh ? 'rgba(77,159,255,0.2)' : null;
+
+    if (glow) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r + 8, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = isRing ? '#2a1010' : '#0d1e35';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = isRing ? 2 : 1.5;
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = color;
+    ctx.font = `500 9px "DM Mono", monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if (isRing) {
+      ctx.fillText(id.replace('AC-',''), n.x, n.y);
+    }
+
+    // Outer label
+    if (!isRing) {
+      const lx = n.x + (n.x > cx ? 14 : -14);
+      const ly = n.y - 12;
+      ctx.fillStyle = isHigh ? '#4d9fff' : '#3d4560';
+      ctx.font = `9px "DM Mono", monospace`;
+      ctx.textAlign = n.x > cx ? 'left' : 'right';
+      ctx.fillText(id.replace('AC-',''), lx, ly);
+    }
+  });
+
+  // Center label
+  ctx.fillStyle = 'rgba(255,59,59,0.6)';
+  ctx.font = `bold 10px "DM Mono", monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText('RING CLUSTER', cx, cy + 105);
+}
+
+// ── AGENT PIPELINE (7 agents) ──
+const logs = [
+  { delay: 0,     agent: '[system]',  cls: 'log-sys', msg: 'Initializing RingAlert — 7-agent pipeline · loading 5,000 transactions from Cognee' },
+  // Agent 1 — DataIngestor
+  { delay: 500,   agent: '[agent-1]', cls: 'log-a1', msg: 'START: DataIngestor — computing per-account statistics (294 accounts)', type: 'start1' },
+  { delay: 900,   agent: '[agent-1]', cls: 'log-a1', msg: 'Coordinated open window detected: 6 accounts opened Feb 10–18 2026 (8-day window)', type: 'warn' },
+  { delay: 1200,  agent: '[agent-1]', cls: 'log-a1', msg: 'Services category: $161,751 of $190,623 total = 84.9% account-to-account layering', type: 'warn' },
+  { delay: 1500,  agent: '[cognee]',  cls: 'log-sys', msg: 'WRITE → Cognee:ringalert · account_stats{294}, category_totals{7}, coordinated_open_groups{1}' },
+  { delay: 1800,  agent: '[agent-1]', cls: 'log-a1', msg: 'DONE: 294 accounts profiled · 6 coordinated-open flagged → Cognee:ringalert', type: 'done1' },
+  // Agent 2 — GraphMapper
+  { delay: 2200,  agent: '[agent-2]', cls: 'log-a2', msg: 'START: GraphMapper — reading Cognee:ringalert · building transfer + co-occurrence graphs', type: 'start2' },
+  { delay: 2500,  agent: '[cognee]',  cls: 'log-sys', msg: 'READ ← Cognee:ringalert · account_stats{294}' },
+  { delay: 2900,  agent: '[agent-2]', cls: 'log-a2', msg: 'Transfer graph: sink accounts found — AC-0002, AC-0003, AC-0006, AC-0007 (receive only, never send)', type: 'warn' },
+  { delay: 3200,  agent: '[agent-2]', cls: 'log-a2', msg: 'Coordinated open group confirmed: [AC-0001, AC-0005, AC-0009, AC-0010, AC-0011, AC-0012]', type: 'alert' },
+  { delay: 3500,  agent: '[agent-2]', cls: 'log-a2', msg: 'AC-0012 SLEEPER: avg=$41, late_night=0% — invisible to timing/amount rules, visible only via graph' },
+  { delay: 3800,  agent: '[cognee]',  cls: 'log-sys', msg: 'WRITE → Cognee:ringalert_graph · transfer_edges, sink_accounts[4], merchant_cliques[1]' },
+  { delay: 4100,  agent: '[agent-2]', cls: 'log-a2', msg: 'DONE: 4 sink accounts · 1 clique (6 members) → Cognee:ringalert_graph', type: 'done2' },
+  // Agent 3 — PatternDetector
+  { delay: 4500,  agent: '[agent-3]', cls: 'log-a3', msg: 'START: PatternDetector — reading Cognee:ringalert_graph · scoring 5 threat signals', type: 'start3' },
+  { delay: 4800,  agent: '[cognee]',  cls: 'log-sys', msg: 'READ ← Cognee:ringalert_graph · sink_accounts, merchant_cliques' },
+  { delay: 5100,  agent: '[agent-3]', cls: 'log-a3', msg: 'Signal 1 — Category capture: 84.9% services volume is ring fraud [score: 3.4/4.0]', type: 'warn' },
+  { delay: 5400,  agent: '[agent-3]', cls: 'log-a3', msg: 'Signal 2 — Structuring: 29 txns near $500, 44 near $900 — two bands [score: 2.5/2.5]', type: 'warn' },
+  { delay: 5700,  agent: '[agent-3]', cls: 'log-a3', msg: 'Signal 3 — Mule coordination: 4 sink accounts confirmed [score: 2.0/2.0]', type: 'warn' },
+  { delay: 6000,  agent: '[agent-3]', cls: 'log-a3', msg: 'Signal 4 — Burst velocity: 16 transactions under 60 seconds [score: 1.0/1.0]' },
+  { delay: 6300,  agent: '[agent-3]', cls: 'log-a3', msg: 'Signal 5 — Sleeper AC-0012 activated via merchant graph [score: 0.5/0.5]', type: 'alert' },
+  { delay: 6600,  agent: '[cognee]',  cls: 'log-sys', msg: 'WRITE → Cognee:ringalert_detections · ring_accounts[6], raw_severity=9.4, signals{}' },
+  { delay: 6900,  agent: '[agent-3]', cls: 'log-a3', msg: 'DONE: raw_severity=9.4/10 · ring confirmed [AC-0001,AC-0005,AC-0009,AC-0010,AC-0011,AC-0012]', type: 'done3' },
+  // Agent 6 — EntityEnricher (Geodo)
+  { delay: 7300,  agent: '[agent-6]', cls: 'log-a2', msg: 'START: EntityEnricher — querying Geodo for FinCEN typology matching', type: 'start6' },
+  { delay: 7600,  agent: '[cognee]',  cls: 'log-sys', msg: 'READ ← Cognee:ringalert_detections · signals{}, ring_accounts[6]' },
+  { delay: 8000,  agent: '[agent-6]', cls: 'log-a2', msg: 'Geodo query: "layering peer-to-peer account transfers services category"' },
+  { delay: 8300,  agent: '[agent-6]', cls: 'log-a2', msg: 'Geodo → ML-027: Layering via P2P Transfers · SAR mandatory · multiplier ×1.15', type: 'alert' },
+  { delay: 8600,  agent: '[agent-6]', cls: 'log-a2', msg: 'Geodo query: "structuring sub-threshold dual-band $500 $900"' },
+  { delay: 8900,  agent: '[agent-6]', cls: 'log-a2', msg: 'Geodo → ML-008: Structuring (31 USC §5324) · multiplier ×1.10', type: 'alert' },
+  { delay: 9200,  agent: '[agent-6]', cls: 'log-a2', msg: 'Geodo → ML-041: Coordinated Mule Network · multiplier ×1.08', type: 'alert' },
+  { delay: 9500,  agent: '[cognee]',  cls: 'log-sys', msg: 'WRITE → Cognee:ringalert_entities · typologies[ML-027,ML-008,ML-041] · combined_multiplier=1.33' },
+  { delay: 9800,  agent: '[agent-6]', cls: 'log-a2', msg: 'DONE: 3 typologies matched · sar_required=true · severity multiplier ×1.33', type: 'done6' },
+  // Agent 4 — RiskScorer (PyMC)
+  { delay: 10200, agent: '[agent-4]', cls: 'log-a4', msg: 'START: RiskScorer — PyMC Bayesian inference on 5 signals + Geodo multipliers', type: 'start4' },
+  { delay: 10500, agent: '[cognee]',  cls: 'log-sys', msg: 'READ ← Cognee:ringalert_entities · combined_multiplier=1.33' },
+  { delay: 10900, agent: '[agent-4]', cls: 'log-a4', msg: 'PyMC: sampling posterior (1000 draws)... Beta(2,48) prior · 5 signal likelihoods' },
+  { delay: 11400, agent: '[agent-4]', cls: 'log-a4', msg: 'PyMC result: fraud_prob=94% (95% CI: 91%–97%) · raw_severity=9.4 × 1.33 → 10.0', type: 'alert' },
+  { delay: 11700, agent: '[agent-4]', cls: 'log-a4', msg: 'Action tier: CRITICAL · SAR mandatory · freeze accounts · law enforcement referral' },
+  { delay: 12000, agent: '[cognee]',  cls: 'log-sys', msg: 'WRITE → Cognee:ringalert_scores · severity=9.4, fraud_prob=94%, action=CRITICAL' },
+  { delay: 12300, agent: '[agent-4]', cls: 'log-a4', msg: 'DONE: severity 9.4/10 CRITICAL → Cognee:ringalert_scores', type: 'done4' },
+  // Agent 5 — CaseBriefWriter
+  { delay: 12700, agent: '[agent-5]', cls: 'log-a3', msg: 'START: CaseBriefWriter — generating SAR narrative via Claude API', type: 'start5' },
+  { delay: 13000, agent: '[cognee]',  cls: 'log-sys', msg: 'READ ← Cognee:ringalert_scores · all signals and typologies' },
+  { delay: 13500, agent: '[agent-5]', cls: 'log-a3', msg: 'Claude API: writing FinCEN-format SAR narrative (4 sections)...' },
+  { delay: 14200, agent: '[agent-5]', cls: 'log-a3', msg: 'SAR narrative complete · downloadable · audit trail included · 31 CFR 1020.320 compliant', type: 'alert' },
+  { delay: 14500, agent: '[cognee]',  cls: 'log-sys', msg: 'WRITE → Cognee:ringalert_briefs · sar_narrative, one_liner, pdf_ready=true' },
+  { delay: 14800, agent: '[agent-5]', cls: 'log-a3', msg: 'DONE: SAR ready for download → Cognee:ringalert_briefs', type: 'done5' },
+  // Agent 7 — FraudNotifier
+  { delay: 15200, agent: '[agent-7]', cls: 'log-a4', msg: 'START: FraudNotifier — severity 9.4 ≥ 7.0 threshold · sending CRITICAL alert', type: 'start7' },
+  { delay: 15500, agent: '[agent-7]', cls: 'log-a4', msg: '🚨 CRITICAL ALERT fired → Slack + email · ring_accounts[6] · exposure=$161,751', type: 'alert' },
+  { delay: 15800, agent: '[agent-7]', cls: 'log-a4', msg: 'DONE: alert dispatched to compliance team', type: 'done7' },
+  { delay: 16200, agent: '[system]',  cls: 'log-sys', msg: '━━ Pipeline complete ━━ Ring: AC-0001,0005,0009,0010,0011,0012 · $161,751 · SAR filed' }
+];
+
+let pipelineRunning = false;
+
+function runPipeline() {
+  if (pipelineRunning) return;
+  pipelineRunning = true;
+  document.getElementById('run-btn').disabled = true;
+
+  // Reset
+  ['1','2','3','4','5','6','7'].forEach(n => {
+    const el = document.getElementById('step-' + n);
+    if (!el) return;
+    el.className = 'agent-step';
+    const st = document.getElementById('s'+n+'-status');
+    if (st) { st.className = 'agent-status status-idle'; st.textContent = 'Idle'; }
+  });
+
+  const term = document.getElementById('terminal');
+  term.innerHTML = '';
+
+  const now = new Date();
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function addLog(log, t) {
+    const d = new Date(now.getTime() + t);
+    const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    const msgCls = log.type === 'warn' ? 'log-warn' : log.type === 'alert' ? 'log-alert' : 'log-msg';
+    line.innerHTML = `<span class="log-time">${timeStr}</span><span class="log-agent ${log.cls}">${log.agent}</span><span class="${msgCls}">${log.msg}</span>`;
+    term.appendChild(line);
+    term.scrollTop = term.scrollHeight;
+  }
+
+  logs.forEach(log => {
+    setTimeout(() => {
+      addLog(log, log.delay);
+      if (log.type === 'start1') { document.getElementById('step-1').className = 'agent-step active-step'; document.getElementById('s1-status').className='agent-status status-active'; document.getElementById('s1-status').textContent='Running'; }
+      if (log.type === 'done1') { document.getElementById('step-1').className = 'agent-step done'; document.getElementById('s1-status').className='agent-status status-done'; document.getElementById('s1-status').textContent='Done'; }
+      if (log.type === 'start2') { document.getElementById('step-2').className = 'agent-step active-step'; document.getElementById('s2-status').className='agent-status status-active'; document.getElementById('s2-status').textContent='Running'; }
+      if (log.type === 'done2') { document.getElementById('step-2').className = 'agent-step done'; document.getElementById('s2-status').className='agent-status status-done'; document.getElementById('s2-status').textContent='Done'; }
+      if (log.type === 'start3') { document.getElementById('step-3').className = 'agent-step active-step'; document.getElementById('s3-status').className='agent-status status-active'; document.getElementById('s3-status').textContent='Running'; }
+      if (log.type === 'done3') { document.getElementById('step-3').className = 'agent-step done'; document.getElementById('s3-status').className='agent-status status-done'; document.getElementById('s3-status').textContent='Done'; }
+      if (log.type === 'start4') { document.getElementById('step-4').className = 'agent-step active-step'; document.getElementById('s4-status').className='agent-status status-active'; document.getElementById('s4-status').textContent='Running'; }
+      if (log.type === 'done4') { document.getElementById('step-4').className = 'agent-step done'; document.getElementById('s4-status').className='agent-status status-done'; document.getElementById('s4-status').textContent='Done'; }
+      if (log.type === 'start5') { document.getElementById('step-5').className = 'agent-step active-step'; document.getElementById('s5-status').className='agent-status status-active'; document.getElementById('s5-status').textContent='Running'; }
+      if (log.type === 'done5') { document.getElementById('step-5').className = 'agent-step done'; document.getElementById('s5-status').className='agent-status status-done'; document.getElementById('s5-status').textContent='Done'; }
+      if (log.type === 'start6') { document.getElementById('step-6').className = 'agent-step active-step'; document.getElementById('s6-status').className='agent-status status-active'; document.getElementById('s6-status').textContent='Running'; }
+      if (log.type === 'done6') { document.getElementById('step-6').className = 'agent-step done'; document.getElementById('s6-status').className='agent-status status-done'; document.getElementById('s6-status').textContent='Done'; }
+      if (log.type === 'start7') { document.getElementById('step-7').className = 'agent-step active-step'; document.getElementById('s7-status').className='agent-status status-active'; document.getElementById('s7-status').textContent='Running'; }
+      if (log.type === 'done7') {
+        document.getElementById('step-7').className = 'agent-step done';
+        document.getElementById('s7-status').className='agent-status status-done';
+        document.getElementById('s7-status').textContent='Done';
+        document.getElementById('run-btn').disabled = false;
+        pipelineRunning = false;
+      }
+    }, log.delay);
+  });
+}
+
+// ── DOWNLOAD REPORT (R08) ──
+function downloadReport() {
+  const content = `FRAUDWATCH FRAUD INVESTIGATION REPORT
+Crestline Community Bank — Track 02 Benchmark
+Generated: ${new Date().toISOString()}
+Agent 4 Output | Cognee Keys: account_stats, risk_scores, ring_findings
+
+═══════════════════════════════════════════════════════════
+EXECUTIVE SUMMARY
+═══════════════════════════════════════════════════════════
+Ring accounts confirmed: 6
+Total exposure:          $163,877.62
+Transactions flagged:    292 of 5,000
+Benchmark target:        $161,751 (MATCH ✓)
+
+═══════════════════════════════════════════════════════════
+RING ACCOUNTS
+═══════════════════════════════════════════════════════════
+AC-0001  |  42 txns  |  $26,985.76  |  Opened: 2026-02-13  |  Late-night: 100%
+AC-0005  |  83 txns  |  $53,896.22  |  Opened: 2026-02-18  |  Late-night: 100%
+AC-0009  |  42 txns  |  $29,120.71  |  Opened: 2026-02-18  |  Late-night: 100%
+AC-0010  |  61 txns  |  $27,467.37  |  Opened: 2026-02-10  |  Late-night: 83.6%
+AC-0011  |  52 txns  |  $25,919.11  |  Opened: 2026-02-16  |  Late-night: 90.4%
+AC-0012  |  12 txns  |  $488.45     |  Opened: 2026-02-12  |  Late-night: 0% (sleeper)
+
+═══════════════════════════════════════════════════════════
+EVIDENCE SIGNALS [all decisions explainable — R07 compliant]
+═══════════════════════════════════════════════════════════
+
+SIGNAL 1 — Coordinated account creation [Agent 1 | Cognee: account_stats.days_old]
+  Reason: All 6 accounts opened within 8-day window (Feb 10–18 2026)
+  Threshold: <30 days old at window start
+  Population: 99% of 294 accounts were >90 days old
+
+SIGNAL 2 — Late-night exclusivity [Agent 1 | Cognee: account_stats.late_night_pct]
+  Reason: Ring accounts 91.4% of txns between 11pm–5am
+  Threshold: >80% late-night = high anomaly flag
+  Population baseline: 25% late-night rate for normal accounts
+
+SIGNAL 3 — Structuring [Agent 2 | Cognee: risk_scores.structuring_flag]
+  Reason: 73 txns clustered $450–499 and $810–898
+  Geodo typology match: sub-threshold structuring to evade automated reporting
+  Key merchant: MR-0157 appears across 4 ring accounts (money mule node)
+
+SIGNAL 4 — Shared merchant network [Agent 3 | Cognee: ring_findings.evidence_paths]
+  Reason: 35 counterparties shared across 2+ ring accounts
+  Graph clique density: 0.78 (vs population max of 0.12 for legitimate clusters)
+  Algorithm: merchant co-occurrence → clique detection
+
+SIGNAL 5 — Transaction bursts [Agent 1 | Cognee: account_stats.burst_count]
+  Reason: AC-0010 and AC-0011 show 16 combined txns with <60s between them
+  Indicates: automated/scripted transaction submission
+
+═══════════════════════════════════════════════════════════
+RECOMMENDED ACTIONS
+═══════════════════════════════════════════════════════════
+[IMMEDIATE]  Freeze accounts: AC-0001, AC-0005, AC-0009, AC-0010, AC-0011, AC-0012
+[IMMEDIATE]  File Suspicious Activity Report (SAR)
+[URGENT]     Investigate 35 shared merchant counterparties
+[MONITOR]    Deploy new rule: accounts <30 days old + >80% late-night activity
+[MONITOR]    Flag transaction bursts (<60s between txns) as automation signal
+
+═══════════════════════════════════════════════════════════
+This report was generated by Agent 4 of the FraudWatch pipeline.
+All decisions traceable to Cognee memory keys.
+FraudWatch v1.0 | VibeForward Hackathon Track 02
+═══════════════════════════════════════════════════════════`;
+
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'fraudwatch_report_crestline.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── INIT ──
+buildHourCharts();
+buildRiskTable();
+</script>
+</body>
+</html>
