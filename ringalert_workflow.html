@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RingAlert — Project Workflow</title>
+<style>
+  :root {
+    --navy: #0D1B2A;
+    --navy2: #1A2E45;
+    --red: #C0392B;
+    --amber: #E67E22;
+    --green: #27AE60;
+    --blue: #2980B9;
+    --purple: #8E44AD;
+    --teal: #16A085;
+    --light: #F4F6F8;
+    --mid: #BDC3C7;
+    --text: #2C3E50;
+    --white: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0A1520; color: var(--white); }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a0a2e 100%);
+    border-bottom: 3px solid var(--red);
+    padding: 28px 40px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-left h1 { font-size: 2.4rem; font-weight: 900; letter-spacing: -1px; }
+  .header-left h1 span { color: var(--red); }
+  .header-left p { font-size: 0.9rem; color: var(--mid); margin-top: 4px; }
+  .header-right { text-align: right; }
+  .deadline { background: var(--red); color: white; padding: 8px 18px; border-radius: 6px; font-weight: 700; font-size: 1rem; display: inline-block; }
+  .track-badge { background: var(--navy2); border: 1px solid var(--mid); padding: 6px 14px; border-radius: 4px; font-size: 0.8rem; color: var(--mid); margin-top: 8px; display: inline-block; }
+
+  /* ── SECTIONS ── */
+  .section { padding: 32px 40px; }
+  .section-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 20px; }
+
+  /* ── IDEA BLOCK ── */
+  .idea-block {
+    background: linear-gradient(135deg, #1a0a0a 0%, #0D1B2A 100%);
+    border: 1px solid var(--red);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+  }
+  .idea-block h2 { font-size: 1.6rem; font-weight: 800; color: var(--white); margin-bottom: 12px; }
+  .idea-block .tagline { font-size: 1.05rem; color: #eee; line-height: 1.6; max-width: 900px; }
+  .idea-block .tagline strong { color: var(--red); }
+  .meta-pills { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  .pill { padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+  .pill-red { background: rgba(192,57,43,0.25); border: 1px solid var(--red); color: #ff8a80; }
+  .pill-blue { background: rgba(41,128,185,0.25); border: 1px solid var(--blue); color: #82cfff; }
+  .pill-green { background: rgba(39,174,96,0.25); border: 1px solid var(--green); color: #88e4a8; }
+  .pill-amber { background: rgba(230,126,34,0.25); border: 1px solid var(--amber); color: #ffc46b; }
+
+  /* ── DATASET BLOCK ── */
+  .dataset-block {
+    background: var(--navy2);
+    border: 1px solid var(--blue);
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 24px;
+    margin-bottom: 32px;
+  }
+  .dataset-icon { font-size: 2.5rem; }
+  .dataset-text h3 { font-size: 1.1rem; font-weight: 700; color: var(--white); }
+  .dataset-text p { font-size: 0.9rem; color: var(--mid); margin-top: 4px; }
+  .dataset-text a { color: #82cfff; text-decoration: none; font-size: 0.85rem; }
+
+  /* ── AGENT PIPELINE ── */
+  .pipeline-wrapper { position: relative; }
+  .cognee-rail {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 160px;
+    top: 60px;
+    bottom: 60px;
+    background: linear-gradient(180deg, rgba(142,68,173,0.15) 0%, rgba(142,68,173,0.3) 50%, rgba(142,68,173,0.15) 100%);
+    border: 2px dashed rgba(142,68,173,0.6);
+    border-radius: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
+  }
+  .cognee-rail-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #c39bd3;
+    text-transform: uppercase;
+  }
+  .agents-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .agent-row {
+    display: grid;
+    grid-template-columns: 1fr 200px 1fr;
+    gap: 0;
+    align-items: center;
+  }
+  .agent-card {
+    background: var(--navy2);
+    border-radius: 10px;
+    padding: 18px 20px;
+    border-left: 4px solid;
+    position: relative;
+  }
+  .agent-card.a1 { border-color: var(--blue); }
+  .agent-card.a2 { border-color: var(--teal); }
+  .agent-card.a3 { border-color: var(--amber); }
+  .agent-card.a4 { border-color: var(--purple); }
+  .agent-card.a5 { border-color: var(--green); }
+  .agent-card.right { border-left: none; border-right: 4px solid; }
+  .agent-num { font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; color: var(--mid); text-transform: uppercase; }
+  .agent-name { font-size: 1rem; font-weight: 800; color: var(--white); margin: 4px 0 8px; }
+  .agent-step { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .a1 .agent-step { color: var(--blue); }
+  .a2 .agent-step { color: var(--teal); }
+  .a3 .agent-step { color: var(--amber); }
+  .a4 .agent-step { color: var(--purple); }
+  .a5 .agent-step { color: var(--green); }
+  .agent-desc { font-size: 0.82rem; color: #aaa; line-height: 1.5; }
+  .agent-tools { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .tool-tag { padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+  .tt-cognee { background: rgba(142,68,173,0.3); color: #c39bd3; border: 1px solid rgba(142,68,173,0.5); }
+  .tt-pymc { background: rgba(41,128,185,0.3); color: #82cfff; border: 1px solid rgba(41,128,185,0.5); }
+  .tt-claude { background: rgba(192,57,43,0.3); color: #ff8a80; border: 1px solid rgba(192,57,43,0.5); }
+  .tt-geodo { background: rgba(230,126,34,0.3); color: #ffc46b; border: 1px solid rgba(230,126,34,0.5); }
+
+  /* center connector */
+  .agent-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 12px;
+  }
+  .conn-write, .conn-read {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .conn-write { background: rgba(142,68,173,0.4); color: #c39bd3; }
+  .conn-read  { background: rgba(39,174,96,0.3); color: #88e4a8; }
+  .conn-arrow { font-size: 1.2rem; color: #8E44AD; }
+
+  /* spacer rows for pipeline arrows */
+  .pipe-arrow-row {
+    display: flex; align-items: center; justify-content: center;
+    height: 28px; position: relative; z-index: 1;
+  }
+  .pipe-arrow-row::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 50%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 20%, rgba(255,255,255,0.08) 50%, transparent 80%);
+  }
+  .pipe-down { font-size: 1.4rem; color: #555; }
+
+  /* ── DATA FLOW ── */
+  .dataflow-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .df-step { background: var(--navy2); border-radius: 8px; padding: 16px 14px; text-align: center; }
+  .df-step .df-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .df-step .df-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--mid); margin-bottom: 6px; }
+  .df-step .df-content { font-size: 0.82rem; color: #ccc; line-height: 1.4; }
+  .df-arrow { display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #555; }
+  .dataflow-row {
+    display: grid;
+    grid-template-columns: 1fr 24px 1fr 24px 1fr 24px 1fr 24px 1fr;
+    gap: 0;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  /* ── JUDGING ── */
+  .judging-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .judge-card {
+    background: var(--navy2);
+    border-radius: 8px;
+    padding: 18px 14px;
+    border-top: 3px solid;
+    text-align: center;
+  }
+  .judge-card:nth-child(1) { border-color: var(--blue); }
+  .judge-card:nth-child(2) { border-color: var(--purple); }
+  .judge-card:nth-child(3) { border-color: var(--teal); }
+  .judge-card:nth-child(4) { border-color: var(--green); }
+  .judge-card:nth-child(5) { border-color: var(--amber); }
+  .judge-num { font-size: 2rem; font-weight: 900; color: var(--white); }
+  .judge-label { font-size: 0.8rem; font-weight: 700; color: var(--mid); margin: 6px 0 10px; }
+  .judge-answer { font-size: 0.77rem; color: #aaa; line-height: 1.4; }
+  .judge-pts { font-size: 0.75rem; font-weight: 800; color: var(--green); margin-top: 10px; letter-spacing: 1px; }
+
+  /* ── STACK ── */
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .stack-card {
+    background: var(--navy2);
+    border-radius: 8px;
+    padding: 16px 18px;
+    border-left: 3px solid;
+  }
+  .stack-card.mandatory { border-color: var(--red); }
+  .stack-card.optional { border-color: var(--mid); }
+  .stack-card.prize { border-color: var(--amber); }
+  .stack-name { font-size: 0.9rem; font-weight: 800; color: var(--white); margin-bottom: 4px; }
+  .stack-badge { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 2px 7px; border-radius: 3px; display: inline-block; margin-bottom: 8px; }
+  .sb-mandatory { background: rgba(192,57,43,0.3); color: #ff8a80; }
+  .sb-optional { background: rgba(189,195,199,0.2); color: var(--mid); }
+  .sb-prize { background: rgba(230,126,34,0.3); color: #ffc46b; }
+  .stack-desc { font-size: 0.8rem; color: #999; line-height: 1.4; }
+  .stack-install { background: rgba(0,0,0,0.4); border-radius: 4px; padding: 6px 10px; margin-top: 8px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #88e4a8; }
+
+  /* ── TIMELINE ── */
+  .timeline { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; }
+  .tl-item { display: grid; grid-template-columns: 100px 24px 1fr; gap: 0; align-items: stretch; }
+  .tl-time { font-size: 0.85rem; font-weight: 700; color: var(--mid); text-align: right; padding: 12px 16px 12px 0; }
+  .tl-spine { display: flex; flex-direction: column; align-items: center; }
+  .tl-dot { width: 14px; height: 14px; border-radius: 50%; margin-top: 14px; flex-shrink: 0; }
+  .tl-line { width: 2px; flex: 1; background: rgba(255,255,255,0.1); }
+  .tl-content { padding: 10px 0 10px 16px; }
+  .tl-label { font-size: 0.85rem; font-weight: 700; color: var(--white); }
+  .tl-detail { font-size: 0.78rem; color: #aaa; margin-top: 3px; }
+  .tl-urgent { background: rgba(192,57,43,0.15); border: 1px solid rgba(192,57,43,0.4); border-radius: 6px; padding: 8px 12px; margin-top: 4px; }
+
+  /* ── ROLES ── */
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .role-card { background: var(--navy2); border-radius: 8px; padding: 18px 16px; }
+  .role-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .role-name { font-size: 0.85rem; font-weight: 800; color: var(--white); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .role-owns { font-size: 0.8rem; color: var(--mid); font-weight: 700; margin-bottom: 6px; }
+  .role-tasks { font-size: 0.78rem; color: #999; line-height: 1.5; }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+  .checklist li { display: flex; align-items: flex-start; gap: 12px; background: var(--navy2); border-radius: 8px; padding: 14px 18px; font-size: 0.88rem; color: #ccc; }
+  .checklist li .cb { width: 20px; height: 20px; border: 2px solid var(--mid); border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+  .checklist li .ci { font-weight: 700; color: var(--white); }
+
+  /* ── PRIZES ── */
+  .prizes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .prize-card { background: var(--navy2); border-radius: 8px; padding: 18px; text-align: center; }
+  .prize-card.top { border: 2px solid var(--amber); background: linear-gradient(135deg, rgba(230,126,34,0.1) 0%, var(--navy2) 100%); }
+  .prize-amount { font-size: 1.6rem; font-weight: 900; color: var(--amber); }
+  .prize-name { font-size: 0.8rem; color: var(--mid); margin-top: 4px; font-weight: 700; }
+  .prize-how { font-size: 0.75rem; color: #888; margin-top: 8px; line-height: 1.4; }
+
+  /* ── FOOTER ── */
+  .footer { background: var(--navy); border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 40px; text-align: center; font-size: 0.8rem; color: var(--mid); }
+  .footer a { color: #82cfff; text-decoration: none; }
+
+  /* divider */
+  .divider { height: 1px; background: rgba(255,255,255,0.07); margin: 0 40px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<div class="header">
+  <div class="header-left">
+    <h1>Ring<span>Alert</span></h1>
+    <p>vibeFORWARD: M-2 &nbsp;·&nbsp; NYC Tech Week &nbsp;·&nbsp; June 7, 2026 &nbsp;·&nbsp; a16z</p>
+  </div>
+  <div class="header-right">
+    <div class="deadline">⏰ Submissions close 5:00 PM</div>
+    <div class="track-badge">Track 02 — Fraud Watch &nbsp;|&nbsp; Multi-Agent Pipeline</div>
+  </div>
+</div>
+
+<!-- ═══════════════ THE IDEA ═══════════════ -->
+<div class="section">
+  <div class="section-title">The Product Idea</div>
+  <div class="idea-block">
+    <h2>RingAlert</h2>
+    <p class="tagline">
+      A bank's fraud ring stayed under every alert threshold — small transactions, circular flows, coordinated accounts.
+      RingAlert <strong>maps 5,000 transactions into a knowledge graph</strong> and surfaces the hidden 12-account fraud ring
+      that rules-based systems missed. Five AI agents, all handing off through <strong>Cognee's memory layer</strong>,
+      deliver a plain-English case brief with a <strong>Bayesian risk score</strong> — in under 3 minutes per case.
+    </p>
+    <div class="meta-pills">
+      <span class="pill pill-red">Track 02 — Fraud Watch</span>
+      <span class="pill pill-blue">5 AI Agents</span>
+      <span class="pill pill-purple">Cognee Memory Layer</span>
+      <span class="pill pill-amber">PyMC Bayesian Scoring</span>
+      <span class="pill pill-green">End user: Fraud Analyst</span>
+    </div>
+  </div>
+
+  <!-- Dataset -->
+  <div class="dataset-block">
+    <div class="dataset-icon">📊</div>
+    <div class="dataset-text">
+      <h3>Dataset: 5,000 bank transactions · 12-account fraud ring hidden inside</h3>
+      <p>Judges hold a hidden answer key. Finding all 12 accounts = bonus credibility points.</p>
+      <a href="https://www.kaggle.com/datasets/quantologist/track02-vibeforward-m-agents" target="_blank">
+        → kaggle.com/datasets/quantologist/track02-vibeforward-m-agents
+      </a>
+      &nbsp;&nbsp;
+      <a href="https://vibe-forward.vercel.app/" target="_blank">→ vibe-forward.vercel.app (all resources)</a>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════ AGENT PIPELINE ═══════════════ -->
+<div class="section">
+  <div class="section-title">Full AI Agent Workflow — All handoffs via Cognee</div>
+
+  <div class="pipeline-wrapper">
+    <div class="cognee-rail">
+      <span class="cognee-rail-label">Cognee Memory Layer</span>
+    </div>
+    <div class="agents-grid">
+
+      <!-- AGENT 1 -->
+      <div class="agent-row">
+        <div class="agent-card a1">
+          <div class="agent-num">Agent 1</div>
+          <div class="agent-name">DataIngestor</div>
+          <div class="agent-step">Step 1 — Find It</div>
+          <div class="agent-desc">
+            Reads the raw 5,000-transaction CSV. Normalises column names, converts amounts to float,
+            drops nulls. Builds a structured entity list (accounts + transaction edges).
+            Stores everything to Cognee via <code style="color:#c39bd3">cognee.remember()</code>.
+          </div>
+          <div class="agent-tools">
+            <span class="tool-tag tt-cognee">Cognee WRITE</span>
+          </div>
+        </div>
+        <div class="agent-connector">
+          <span class="conn-write">→ remember()</span>
+          <span class="conn-arrow">⟵⟶</span>
+          <span class="conn-read">← recall()</span>
+        </div>
+        <div style="background:rgba(41,128,185,0.08); border: 1px dashed rgba(41,128,185,0.3); border-radius:8px; padding:16px; font-size:0.8rem; color:#aaa;">
+          <strong style="color:#82cfff">Input:</strong> track02_transactions.csv<br><br>
+          <strong style="color:#82cfff">Output stored to Cognee:</strong><br>
+          • List of all account IDs<br>
+          • All 5,000 transaction records (normalised)<br>
+          • Total row count + ingestion timestamp
+        </div>
+      </div>
+
+      <div class="pipe-arrow-row"><span class="pipe-down">↓</span></div>
+
+      <!-- AGENT 2 -->
+      <div class="agent-row">
+        <div style="background:rgba(22,160,133,0.08); border: 1px dashed rgba(22,160,133,0.3); border-radius:8px; padding:16px; font-size:0.8rem; color:#aaa;">
+          <strong style="color:#88e4a8">Reads from Cognee:</strong><br>
+          • All account entities<br>
+          • All transaction records<br><br>
+          <strong style="color:#88e4a8">Writes back to Cognee:</strong><br>
+          • Directed graph (A→B edges)<br>
+          • Suspicion score per edge pair<br>
+          • Micro-transaction flags
+        </div>
+        <div class="agent-connector">
+          <span class="conn-write">→ remember()</span>
+          <span class="conn-arrow">⟵⟶</span>
+          <span class="conn-read">← recall()</span>
+        </div>
+        <div class="agent-card a2 right">
+          <div class="agent-num">Agent 2</div>
+          <div class="agent-name">GraphMapper</div>
+          <div class="agent-step">Step 2 — Rank It</div>
+          <div class="agent-desc">
+            Reads all entities from Cognee. Builds a directed relationship graph: who sent to whom,
+            total flow, frequency, timing clusters. Calculates a suspicion score per edge pair.
+            Flags micro-transactions (repeated amounts below $500). Stores enriched graph to Cognee.
+          </div>
+          <div class="agent-tools">
+            <span class="tool-tag tt-cognee">Cognee READ + WRITE</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipe-arrow-row"><span class="pipe-down">↓</span></div>
+
+      <!-- AGENT 3 -->
+      <div class="agent-row">
+        <div class="agent-card a3">
+          <div class="agent-num">Agent 3</div>
+          <div class="agent-name">PatternDetector</div>
+          <div class="agent-step">Step 3 — Act On It</div>
+          <div class="agent-desc">
+            Reads the enriched graph from Cognee. Runs DFS cycle detection to find circular flows
+            (A→B→C→A). Cross-references micro-transaction accounts and coordinated timing clusters.
+            Flags each fraud ring with full evidence trail. Stores flagged rings to Cognee.
+          </div>
+          <div class="agent-tools">
+            <span class="tool-tag tt-cognee">Cognee READ + WRITE</span>
+            <span class="tool-tag tt-geodo">Geodo research</span>
+          </div>
+        </div>
+        <div class="agent-connector">
+          <span class="conn-write">→ remember()</span>
+          <span class="conn-arrow">⟵⟶</span>
+          <span class="conn-read">← recall()</span>
+        </div>
+        <div style="background:rgba(230,126,34,0.08); border: 1px dashed rgba(230,126,34,0.3); border-radius:8px; padding:16px; font-size:0.8rem; color:#aaa;">
+          <strong style="color:#ffc46b">Detects 3 fraud patterns:</strong><br><br>
+          🔴 <strong style="color:#ffc46b">Circular flows</strong> — A→B→C→A money loops<br><br>
+          🟡 <strong style="color:#ffc46b">Micro-transactions</strong> — repeated amounts just below $500 alert threshold<br><br>
+          🟠 <strong style="color:#ffc46b">Coordinated timing</strong> — unrelated accounts transacting in synchronized bursts
+        </div>
+      </div>
+
+      <div class="pipe-arrow-row"><span class="pipe-down">↓</span></div>
+
+      <!-- AGENT 4 -->
+      <div class="agent-row">
+        <div style="background:rgba(142,68,173,0.08); border: 1px dashed rgba(142,68,173,0.3); border-radius:8px; padding:16px; font-size:0.8rem; color:#aaa;">
+          <strong style="color:#c39bd3">Reads from Cognee:</strong><br>
+          • All flagged ring objects<br>
+          • Evidence trails<br><br>
+          <strong style="color:#c39bd3">PyMC Bayesian model outputs:</strong><br>
+          • Fraud probability (e.g. 94%)<br>
+          • 90% confidence interval (±3%)<br>
+          • Downloadable narrative PDF ← R08
+        </div>
+        <div class="agent-connector">
+          <span class="conn-write">→ remember()</span>
+          <span class="conn-arrow">⟵⟶</span>
+          <span class="conn-read">← recall()</span>
+        </div>
+        <div class="agent-card a4 right">
+          <div class="agent-num">Agent 4</div>
+          <div class="agent-name">RiskScorer</div>
+          <div class="agent-step">Step 4 — Explain It</div>
+          <div class="agent-desc">
+            Reads flagged rings from Cognee. Runs PyMC Bayesian inference — outputs
+            <em>"94% fraud probability ±3%"</em> instead of a black-box score.
+            Generates a downloadable narrative PDF per ring (required by Rule R08).
+            Domain Expert owns the narrative text. Stores scores to Cognee.
+          </div>
+          <div class="agent-tools">
+            <span class="tool-tag tt-cognee">Cognee READ + WRITE</span>
+            <span class="tool-tag tt-pymc">PyMC</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipe-arrow-row"><span class="pipe-down">↓</span></div>
+
+      <!-- AGENT 5 -->
+      <div class="agent-row">
+        <div class="agent-card a5">
+          <div class="agent-num">Agent 5</div>
+          <div class="agent-name">CaseBriefWriter</div>
+          <div class="agent-step">Step 5 — Show It</div>
+          <div class="agent-desc">
+            Reads ALL prior results from Cognee. Uses Claude API to write a plain-English
+            3-sentence case brief per ring: what happened, why it's suspicious, recommended action.
+            Brief surfaces in the UI right panel. Zero SQL. Zero training needed to act on it.
+          </div>
+          <div class="agent-tools">
+            <span class="tool-tag tt-cognee">Cognee READ</span>
+            <span class="tool-tag tt-claude">Claude API</span>
+          </div>
+        </div>
+        <div class="agent-connector">
+          <span class="conn-read">← recall()</span>
+          <span class="conn-arrow">↓</span>
+          <span style="font-size:0.65rem; color:#88e4a8; text-align:center">UI output</span>
+        </div>
+        <div style="background:rgba(39,174,96,0.08); border: 1px dashed rgba(39,174,96,0.3); border-radius:8px; padding:16px; font-size:0.8rem; color:#aaa;">
+          <strong style="color:#88e4a8">Final output to UI:</strong><br><br>
+          📋 <strong style="color:#88e4a8">Ring ID</strong> + risk level badge<br>
+          📊 <strong style="color:#88e4a8">Risk score</strong> — 94% ±3% (PyMC)<br>
+          🏦 <strong style="color:#88e4a8">Account list</strong> — the fraud ring members<br>
+          📝 <strong style="color:#88e4a8">3-sentence brief</strong> — plain English<br>
+          🚩 <strong style="color:#88e4a8">Flag for Review</strong> / ✓ Dismiss buttons
+        </div>
+      </div>
+
+    </div><!-- /agents-grid -->
+  </div><!-- /pipeline-wrapper -->
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════ JUDGING ═══════════════ -->
+<div class="section">
+  <div class="section-title">Judging Criteria — 5 pts each · 25 max · need 15 to qualify</div>
+  <div class="judging-grid">
+    <div class="judge-card">
+      <div class="judge-num">1</div>
+      <div class="judge-label">Agents that work</div>
+      <div class="judge-answer">Agent 1 runs directly on the provided CSV. If data loads and Cognee receives entities, you pass.</div>
+      <div class="judge-pts">→ Build ingestion first. Nothing else matters if this fails.</div>
+    </div>
+    <div class="judge-card">
+      <div class="judge-num">2</div>
+      <div class="judge-label">Real collaboration via Cognee</div>
+      <div class="judge-answer">Every agent reads what the previous wrote. cognee.remember() on write, cognee.recall() on read. Cognee IS the handoff.</div>
+      <div class="judge-pts">→ No agent can skip Cognee. Not even one.</div>
+    </div>
+    <div class="judge-card">
+      <div class="judge-num">3</div>
+      <div class="judge-label">Matches your brief</div>
+      <div class="judge-answer">Judged against YOUR OWN Step 0 promises. Underpromise, then deliver exactly that.</div>
+      <div class="judge-pts">→ Submit Step 0 first. Write conservatively.</div>
+    </div>
+    <div class="judge-card">
+      <div class="judge-num">4</div>
+      <div class="judge-label">End user can use it</div>
+      <div class="judge-answer">A judge picks it up cold at 4 PM. No CLI. No instructions. Big buttons. Plain English everywhere.</div>
+      <div class="judge-pts">→ Upload CSV → Run → See fraud ring. That's the whole flow.</div>
+    </div>
+    <div class="judge-card">
+      <div class="judge-num">5</div>
+      <div class="judge-label">Explainable</div>
+      <div class="judge-answer">Every output shows its reason. Risk score includes "why" (3 circular flows, 47 micro-tx, coordinated timing).</div>
+      <div class="judge-pts">→ No black box outputs. Every decision has a label.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════ TECH STACK ═══════════════ -->
+<div class="section">
+  <div class="section-title">Tech Stack — Setup Commands</div>
+  <div class="stack-grid">
+    <div class="stack-card mandatory">
+      <div class="stack-name">Cognee</div>
+      <span class="stack-badge sb-mandatory">MANDATORY</span>
+      <div class="stack-desc">Memory layer for all agent handoffs. Graph-native — perfect for fraud networks. Every agent reads/writes here.</div>
+      <div class="stack-install">pip install cognee</div>
+      <div style="font-size:0.75rem; color:#888; margin-top:6px;">→ cognee.ai · 14-day trial · Discord: discord.gg/5SHNNhe7t</div>
+    </div>
+    <div class="stack-card mandatory">
+      <div class="stack-name">Trupeer</div>
+      <span class="stack-badge sb-mandatory">MANDATORY (no video = DQ)</span>
+      <div class="stack-desc">5-minute demo video. Auto-zooms on clicks, removes filler words, adds narration. Record at the end.</div>
+      <div class="stack-install">→ app.trupeer.ai/auth</div>
+      <div style="font-size:0.75rem; color:#888; margin-top:6px;">$200 "Best Use of Trupeer" prize available</div>
+    </div>
+    <div class="stack-card mandatory">
+      <div class="stack-name">Geodo</div>
+      <span class="stack-badge sb-mandatory">MANDATORY</span>
+      <div class="stack-desc">Domain Expert uses this to research real-world entities in the dataset. Web platform — no code required.</div>
+      <div class="stack-install">→ geodo.ai · 100 credits included</div>
+      <div style="font-size:0.75rem; color:#888; margin-top:6px;">Sign up first, then request access via Google form</div>
+    </div>
+    <div class="stack-card prize">
+      <div class="stack-name">PyMC</div>
+      <span class="stack-badge sb-prize">OPTIONAL · $2,000 PRIZE</span>
+      <div class="stack-desc">Bayesian fraud probability with confidence intervals. Outputs "94% ±3%" — defensible, explainable, impressive.</div>
+      <div class="stack-install">pip install pymc</div>
+      <div style="font-size:0.75rem; color:#888; margin-top:6px;">Check hub.decision.ai for existing fraud skills first</div>
+    </div>
+    <div class="stack-card optional">
+      <div class="stack-name">Anthropic / Claude API</div>
+      <span class="stack-badge sb-optional">RECOMMENDED</span>
+      <div class="stack-desc">Powers Agent 5 (CaseBriefWriter). Generates plain-English case briefs from Cognee data.</div>
+      <div class="stack-install">pip install anthropic</div>
+      <div style="font-size:0.75rem; color:#888; margin-top:6px;">Bring your own API key. Groq free tier also works.</div>
+    </div>
+    <div class="stack-card optional">
+      <div class="stack-name">Lovable.dev + LingCode</div>
+      <span class="stack-badge sb-optional">RECOMMENDED</span>
+      <div class="stack-desc">Lovable builds the UI from a prompt. LingCode is the browser IDE with Claude Code + Codex built in.</div>
+      <div class="stack-install">→ lovable.dev · lingcode.dev/try</div>
+      <div style="font-size:0.75rem; color:#888; margin-top:6px;">No install needed — both are browser-based</div>
+    </div>
+  </div>
+
+  <div style="background:#0a1a0a; border:1px solid rgba(39,174,96,0.3); border-radius:8px; padding:16px 20px; font-family:'Courier New',monospace; font-size:0.82rem; color:#88e4a8; line-height:1.8;">
+    <span style="color:#555"># Full install (run in LingCode or terminal)</span><br>
+    pip install cognee anthropic pymc pandas numpy --break-system-packages<br><br>
+    <span style="color:#555"># Set your API keys</span><br>
+    export ANTHROPIC_API_KEY="sk-ant-..."<br>
+    export COGNEE_API_KEY="your-cognee-key"<br><br>
+    <span style="color:#555"># Run the pipeline</span><br>
+    python ringalert_agents.py
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════ TEAM ROLES ═══════════════ -->
+<div class="section">
+  <div class="section-title">Team Roles — Who does what</div>
+  <div class="roles-grid">
+    <div class="role-card">
+      <div class="role-icon">⚙️</div>
+      <div class="role-name">Builder</div>
+      <div class="role-owns">Owns: Agents 1–5</div>
+      <div class="role-tasks">
+        • Set up Cognee + API keys<br>
+        • Run ringalert_agents.py<br>
+        • Wire agents to the UI<br>
+        • Debug handoff failures<br>
+        • Push code to GitHub
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">📋</div>
+      <div class="role-name">Designer</div>
+      <div class="role-owns">Owns: Step 0 + UI</div>
+      <div class="role-tasks">
+        • Submit Product Brief PDF (Step 0)<br>
+        • Paste Lovable prompt → build UI<br>
+        • Make sure a judge can use it cold<br>
+        • Write Devpost description<br>
+        • Add explainability labels to UI
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">🔍</div>
+      <div class="role-name">Domain Expert</div>
+      <div class="role-owns">Owns: Geodo + Agent 4 narrative</div>
+      <div class="role-tasks">
+        • Research entities in dataset via Geodo<br>
+        • Write the Agent 4 downloadable narrative<br>
+        • Validate agent outputs are correct<br>
+        • Confirm fraud ring accounts make sense<br>
+        • Add real-world context to briefs
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-icon">🎬</div>
+      <div class="role-name">Presenter</div>
+      <div class="role-owns">Owns: Trupeer + Demo</div>
+      <div class="role-tasks">
+        • Record 5-min Trupeer demo video<br>
+        • Use the demo script provided<br>
+        • Practice cold walkthrough for judges<br>
+        • Prep 2-min live stage pitch<br>
+        • Submit video URL to Devpost
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════ TIMELINE ═══════════════ -->
+<div class="section">
+  <div class="section-title">Build Timeline — 11:00 AM to 5:00 PM (6 hours)</div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-time">11:00 AM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--red)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">🔴 Step 0 — Submit Product Brief to Devpost FIRST</div>
+        <div class="tl-detail">Upload RingAlert_Step0_ProductBrief.pdf · Register team · Select Track 02</div>
+        <div class="tl-urgent" style="color:#ff8a80">Do this before writing a single line of code. You cannot win without it.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">11:20 AM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--blue)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">Agent 1 — DataIngestor (Builder)</div>
+        <div class="tl-detail">Download Kaggle CSV · Install packages · Get Cognee connected · Run Agent 1 · Verify data stores to Cognee</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">11:50 AM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--teal)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">Agent 2 — GraphMapper (Builder)</div>
+        <div class="tl-detail">Build directed graph from Cognee data · Calculate suspicion scores · Verify graph stored back to Cognee</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">12:30 PM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">🍽️ Lunch break · Agent 3 running in background</div>
+        <div class="tl-detail">PatternDetector finds circular flows while you eat · Domain Expert starts Geodo research</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">1:00 PM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">Agent 3 verified + UI starts (Builder + Designer in parallel)</div>
+        <div class="tl-detail">Builder: verify fraud rings flagged correctly · Designer: paste Lovable prompt, build dashboard</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">2:00 PM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--purple)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">Agent 4 — RiskScorer + Agent 4 narrative (Builder + Domain Expert)</div>
+        <div class="tl-detail">PyMC scoring live · Domain Expert writes the downloadable narrative (R08) · Connect UI to pipeline output</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">2:45 PM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">Agent 5 — CaseBriefWriter · Full pipeline end-to-end</div>
+        <div class="tl-detail">Run full pipeline on real dataset · Verify all 5 agents chain via Cognee · Briefs appear in UI</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">3:15 PM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--white)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">Polish sprint — explainability + cold-use test</div>
+        <div class="tl-detail">Add "why" labels to every output · Have a teammate use it cold with zero instructions · Fix anything confusing</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">3:45 PM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">🎬 Record Trupeer demo video (Presenter)</div>
+        <div class="tl-detail">Use trupeer_demo_script.md · 5 minutes · Upload and get URL ready for Devpost</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">4:00 PM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--red)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">🚶 Science fair — judges walk the room</div>
+        <div class="tl-detail">Product must be LIVE and working · Demo it as the end user · Answer: what does each agent do? where is Cognee?</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">5:00 PM</div>
+      <div class="tl-spine"><div class="tl-dot" style="background:var(--red)"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-label">🔴 SUBMISSIONS CLOSE — NO EXTENSIONS</div>
+        <div class="tl-detail">Devpost must have: Product Brief PDF · GitHub link · Trupeer URL · Track selection · Written description</div>
+        <div class="tl-urgent" style="color:#ff8a80">Submit 30 minutes early. Do not risk a technical failure at 4:58 PM.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════ SUBMISSION CHECKLIST ═══════════════ -->
+<div class="section">
+  <div class="section-title">Devpost Submission Checklist — All 5 required</div>
+  <ul class="checklist">
+    <li><div class="cb"></div><div><span class="ci">Product Brief PDF</span> — RingAlert_Step0_ProductBrief.pdf uploaded to Devpost</div></li>
+    <li><div class="cb"></div><div><span class="ci">GitHub repo link</span> — public repo with ringalert_agents.py and README</div></li>
+    <li><div class="cb"></div><div><span class="ci">Trupeer video URL</span> — 5-minute narrated demo, recorded with Trupeer, URL pasted into Devpost</div></li>
+    <li><div class="cb"></div><div><span class="ci">Track selection</span> — Track 02: Fraud Watch selected on Devpost</div></li>
+    <li><div class="cb"></div><div><span class="ci">Written product description</span> — short paragraph on Devpost describing RingAlert</div></li>
+  </ul>
+  <div style="background:rgba(39,174,96,0.08); border:1px solid rgba(39,174,96,0.3); border-radius:8px; padding:14px 18px; font-size:0.82rem; color:#88e4a8;">
+    ✅ Also complete: <a href="https://forms.gle/HGoa9fKruQEHazLAA" style="color:#82cfff">Team verification form</a> &nbsp;·&nbsp;
+    Submit at: <a href="https://vibeforward-m2-agents.devpost.com/" style="color:#82cfff">vibeforward-m2-agents.devpost.com</a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════ PRIZES ═══════════════ -->
+<div class="section">
+  <div class="section-title">Prize Targets</div>
+  <div class="prizes-grid">
+    <div class="prize-card top">
+      <div class="prize-amount">$1,500</div>
+      <div class="prize-name">1st Place Cash</div>
+      <div class="prize-how">Score 25/25. Hit all 5 criteria. Find all 12 fraud ring accounts.</div>
+    </div>
+    <div class="prize-card">
+      <div class="prize-amount">$2,000</div>
+      <div class="prize-name">PyMC Special Prize</div>
+      <div class="prize-how">Use PyMC for Bayesian scoring in Agent 4. Course seat (~$2,000 value).</div>
+    </div>
+    <div class="prize-card">
+      <div class="prize-amount">$200</div>
+      <div class="prize-name">Best Use of Trupeer</div>
+      <div class="prize-how">Best 5-minute demo video. Polish counts. Record last, after the product works.</div>
+    </div>
+    <div class="prize-card">
+      <div class="prize-amount">$3,000</div>
+      <div class="prize-name">Geodo Top Team</div>
+      <div class="prize-how">3 Pro accounts. Domain Expert must use Geodo to research entities in the dataset.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<div class="footer">
+  RingAlert &nbsp;·&nbsp; vibeFORWARD: M-2 &nbsp;·&nbsp; Track 02: Fraud Watch &nbsp;·&nbsp; June 7, 2026 &nbsp;·&nbsp;
+  <a href="https://vibeforward-m2-agents.devpost.com/">Devpost</a> &nbsp;·&nbsp;
+  <a href="https://vibe-forward.vercel.app/">Resources</a> &nbsp;·&nbsp;
+  <a href="https://www.kaggle.com/datasets/quantologist/track02-vibeforward-m-agents">Dataset</a> &nbsp;·&nbsp;
+  <a href="https://cognee.ai">Cognee</a> &nbsp;·&nbsp;
+  <a href="https://app.trupeer.ai/auth">Trupeer</a>
+</div>
+
+</body>
+</html>
