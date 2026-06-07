@@ -311,14 +311,6 @@ Add analytics screenshot here.
 - Multi-model ensemble learning
 - Enhanced dashboard analytics
 
----
-
-## Team Members
-
-### Fraud-Finders Development Team
-
-- Md Omit
-- Team Members
 
 ---
 
@@ -381,13 +373,3 @@ Special thanks to:
 - Flask/FastAPI
 - GitHub
 
----
-
-## Contact
-
-For questions, suggestions, or collaboration opportunities:
-
-GitHub Repository:
-https://github.com/ATMmonitor667/Fraud-Finders
-
-**Fraud-Finders — Detecting Fraud, Protecting Transactions, and Building Trust Through Machine Learning.**
